@@ -66,12 +66,16 @@
     --ring: 18 35% 58%;
   }
 
-  * {
-    @apply border-border;
+  *,
+  ::before,
+  ::after {
+    border-color: hsl(var(--border));
   }
 
   body {
-    @apply bg-background text-foreground antialiased selection:bg-brand-100 selection:text-brand-900;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    @apply antialiased selection:bg-brand-100 selection:text-brand-900;
     font-feature-settings: 'rlig' 1, 'calt' 1;
     min-height: 100dvh;
   }
