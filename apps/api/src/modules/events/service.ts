@@ -395,7 +395,7 @@ export class EventsService {
    * Mengambil daftar seluruh acara yang dimiliki oleh Host.
    */
   async getHostEvents(hostId: string) {
-    return db
+    return await db
       .select()
       .from(events)
       .where(eq(events.hostId, hostId))
