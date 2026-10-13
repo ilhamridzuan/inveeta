@@ -18,8 +18,8 @@ jobs:
         image: postgres:16-alpine
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
           POSTGRES_DB: inveeta_dev
+          POSTGRES_HOST_AUTH_METHOD: trust
         ports:
           - 5432:5432
         options: >-
@@ -53,11 +53,11 @@ jobs:
       - name: Turbo Typecheck
         run: pnpm turbo typecheck
 
-      - name: Push Database Schema & Seed Data
+      - name: Migrate Database Schema & Seed Data
         env:
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/inveeta_dev"
         run: |
-          pnpm db:push
+          pnpm db:migrate
           pnpm db:seed
 
       - name: Turbo Test

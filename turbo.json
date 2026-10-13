@@ -76,5 +76,5 @@
       "cache": false
     }
   },
-  "globalEnv": ["NODE_ENV"]
+  "globalEnv": ["NODE_ENV", "DATABASE_URL"]
 }
