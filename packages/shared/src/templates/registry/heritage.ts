@@ -1,21 +1,15 @@
 import type { TemplateDefinition } from '../types.js';
-import {
-  BASE_FREE_SECTIONS_ORDER,
-  BASE_FREE_ALLOWED_SECTIONS,
-  BASE_FREE_REQUIRED_SECTIONS,
-} from './common.js';
+import { createFreeTemplate } from './common.js';
 
-export const javaneseHeritage: TemplateDefinition = {
+export const javaneseHeritage: TemplateDefinition = createFreeTemplate({
   id: 'javanese-heritage',
   name: 'Javanese Classic Heritage',
   description:
     'Sentuhan budaya klasik berwibawa dengan ornamen tradisional, palet emas terracotta, dan tipografi megah.',
-  thumbnailUrl:
-    'https://cdn.inveeta.com/templates/thumbnails/javanese-heritage.webp',
-  tier: 'free',
-  maxPhotos: 5,
+  thumbnailSlug: 'javanese-heritage',
   supportedFonts: ['cinzel-lato', 'cormorant-montserrat'],
   defaultFont: 'cinzel-lato',
+  defaultCoverLayout: 'minimal-typography',
   colorPresets: [
     {
       id: 'royal-gold',
@@ -34,14 +28,4 @@ export const javaneseHeritage: TemplateDefinition = {
       background: '#F8F5F0',
     },
   ],
-  defaultCustomization: {
-    primaryColor: '#4A2E18',
-    secondaryColor: '#F4E8C1',
-    fontFamily: 'cinzel-lato',
-    coverLayout: 'minimal-typography',
-    sectionsOrder: [...BASE_FREE_SECTIONS_ORDER],
-    hiddenSections: [],
-  },
-  allowedSections: BASE_FREE_ALLOWED_SECTIONS,
-  requiredSections: BASE_FREE_REQUIRED_SECTIONS,
-};
+});

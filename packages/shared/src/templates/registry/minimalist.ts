@@ -1,21 +1,15 @@
 import type { TemplateDefinition } from '../types.js';
-import {
-  BASE_FREE_SECTIONS_ORDER,
-  BASE_FREE_ALLOWED_SECTIONS,
-  BASE_FREE_REQUIRED_SECTIONS,
-} from './common.js';
+import { createFreeTemplate } from './common.js';
 
-export const minimalistElegance: TemplateDefinition = {
+export const minimalistElegance: TemplateDefinition = createFreeTemplate({
   id: 'minimalist-elegance',
   name: 'Minimalist Elegance',
   description:
     'Desain bersih, modern, dan anggun dengan tipografi serif elegan dan fokus pada foto potret.',
-  thumbnailUrl:
-    'https://cdn.inveeta.com/templates/thumbnails/minimalist-elegance.webp',
-  tier: 'free',
-  maxPhotos: 5,
+  thumbnailSlug: 'minimalist-elegance',
   supportedFonts: ['playfair-inter', 'cormorant-montserrat'],
   defaultFont: 'playfair-inter',
+  defaultCoverLayout: 'fullscreen-image',
   colorPresets: [
     {
       id: 'warm-sand',
@@ -34,14 +28,4 @@ export const minimalistElegance: TemplateDefinition = {
       background: '#FFFFFF',
     },
   ],
-  defaultCustomization: {
-    primaryColor: '#2D3748',
-    secondaryColor: '#E2D9D2',
-    fontFamily: 'playfair-inter',
-    coverLayout: 'fullscreen-image',
-    sectionsOrder: [...BASE_FREE_SECTIONS_ORDER],
-    hiddenSections: [],
-  },
-  allowedSections: BASE_FREE_ALLOWED_SECTIONS,
-  requiredSections: BASE_FREE_REQUIRED_SECTIONS,
-};
+});
