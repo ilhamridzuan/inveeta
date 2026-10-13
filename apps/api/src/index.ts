@@ -14,6 +14,7 @@ import {
 } from './middlewares/index.js';
 import { publicRoutes } from './routes/public.js';
 import { manageRoutes } from './routes/manage.js';
+import { realtimeRoutes } from './modules/realtime/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -47,7 +48,8 @@ export const app = new Hono()
   })
   // 3. Mount sub-routes with method chaining
   .route('/api/v1/public', publicRoutes)
-  .route('/api/v1/manage', manageRoutes);
+  .route('/api/v1/manage', manageRoutes)
+  .route('/api/v1/realtime', realtimeRoutes);
 
 export type AppType = typeof app;
 
