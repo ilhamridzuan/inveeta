@@ -87,7 +87,7 @@ export const Step3BiodataStory: React.FC<Step3Props> = ({
     setLoveStory((prev) => [
       ...prev,
       {
-        _clientId: `story_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        _clientId: `story_${Date.now()}_${crypto.randomUUID()}`,
         year: `${new Date().getFullYear()}`,
         story: 'Momen berharga lainnya dalam perjalanan cinta kami.',
       },

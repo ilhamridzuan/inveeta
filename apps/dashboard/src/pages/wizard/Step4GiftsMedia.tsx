@@ -101,7 +101,7 @@ export const Step4GiftsMedia: React.FC<Step4Props> = ({
     setBankAccounts((prev) => [
       ...prev,
       {
-        _clientId: `bank_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        _clientId: `bank_${Date.now()}_${crypto.randomUUID()}`,
         bankName: 'Mandiri',
         accountNumber: '',
         accountHolder: '',
