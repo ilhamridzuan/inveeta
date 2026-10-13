@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  quality-and-build:
+    name: Lint, Typecheck, Test & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.27.0
+          run_install: false
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Turbo Lint
+        run: pnpm turbo lint
+
+      - name: Turbo Typecheck
+        run: pnpm turbo typecheck
+
+      - name: Turbo Test
+        run: pnpm turbo test
+
+      - name: Turbo Build
+        env:
+          NODE_ENV: production
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/inveeta_dev"
+          BETTER_AUTH_SECRET: "dummy_secret_for_ci_build_minimum_32_characters_long"
+          BETTER_AUTH_URL: "http://localhost:3000"
+          GOOGLE_CLIENT_ID: "dummy_google_client_id"
+          GOOGLE_CLIENT_SECRET: "dummy_google_client_secret"
+          RESEND_API_KEY: "dummy_resend_api_key"
+          R2_ACCOUNT_ID: "dummy_r2_account_id"
+          R2_ACCESS_KEY_ID: "dummy_r2_access_key_id"
+          R2_SECRET_ACCESS_KEY: "dummy_r2_secret_access_key"
+          R2_BUCKET_NAME: "inveeta-storage"
+          REVALIDATION_SECRET: "dummy_revalidation_secret_for_ci"
+          INVITATION_APP_URL: "http://localhost:3001"
+          CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001,http://localhost:5173"
+        run: pnpm turbo build
