@@ -2,11 +2,11 @@
 node_modules/
 .pnpm-store/
 
-# Build outputs
+# Build outputs & Bundlers
 dist/
 build/
-.next/
 out/
+.next/
 
 # Turborepo & Cache
 .turbo/
@@ -14,13 +14,17 @@ out/
 *.tsbuildinfo
 .eslintcache/
 
+# Deployment Platforms
+.vercel/
+
 # Environment files
 .env
-.env*.local
-.env.development
-.env.test
-.env.production
+.env.*
 !.env.example
+
+# Certificates & Secrets
+*.pem
+*.key
 
 # Logs
 npm-debug.log*
@@ -29,9 +33,14 @@ yarn-error.log*
 pnpm-debug.log*
 *.log
 
-# OS & Editor
+# OS & Desktop metadata
 .DS_Store
 Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# IDE & Editors
 .idea/
 .vscode/*
 !.vscode/extensions.json
@@ -45,3 +54,8 @@ Thumbs.db
 # Testing & Coverage
 coverage/
 .nyc_output/
+
+# Temporary / Scratch
+tmp/
+temp/
+scratch/
