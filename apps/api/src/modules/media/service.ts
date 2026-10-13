@@ -272,6 +272,106 @@ export class MediaService {
       message: 'Media berhasil dihapus',
     };
   }
+
+  /**
+   * Mengunggah file media langsung melalui server (fallback jika browser memicu CORS preflight di R2).
+   */
+  async uploadDirect(
+    userId: string,
+    params: {
+      eventId: string;
+      fileName: string;
+      mediaType: 'photo' | 'audio' | 'qris' | 'og_image';
+      mimeType: string;
+      fileBuffer: Buffer;
+      slotIdentifier?: string;
+      sortOrder?: number;
+    }
+  ): Promise<ConfirmedMediaResponseDTO> {
+    // 1. Verifikasi kepemilikan acara
+    const [event] = await db
+      .select({ id: events.id, hostId: events.hostId, templateId: events.templateId })
+      .from(events)
+      .where(and(eq(events.id, params.eventId), eq(events.hostId, userId)));
+
+    if (!event) {
+      throw new ForbiddenError('Anda tidak memiliki izin untuk mengunggah media ke acara ini');
+    }
+
+    // 2. Tentukan folder dan fileKey
+    const folder = resolveMediaFolder(params.mediaType);
+    const ext = resolveFileExtension(params.fileName, params.mimeType);
+    const uniqueId = generateId(16);
+    const fileKey = `events/${params.eventId}/${folder}/${uniqueId}${ext}`;
+
+    // 3. Upload langsung ke Cloudflare R2 via PutObjectCommand dari server
+    await r2Client.send(
+      new PutObjectCommand({
+        Bucket: R2_BUCKET_NAME,
+        Key: fileKey,
+        ContentType: params.mimeType,
+        Body: params.fileBuffer,
+      })
+    );
+
+    const fileUrl = `${R2_PUBLIC_URL}/${fileKey}`;
+
+    // 4. Catat baris ke database PostgreSQL
+    const [mediaRecord] = await db
+      .insert(eventMedia)
+      .values({
+        eventId: params.eventId,
+        mediaType: params.mediaType,
+        fileKey,
+        fileUrl,
+        mimeType: params.mimeType,
+        fileSize: params.fileBuffer.length,
+        slotIdentifier: params.slotIdentifier || null,
+        sortOrder: params.sortOrder || 0,
+      })
+      .returning();
+
+    // 5. Sinkronisasi kolom khusus acara
+    if (params.mediaType === 'photo' && params.slotIdentifier === 'cover') {
+      await db
+        .update(events)
+        .set({ coverPhotoUrl: fileUrl })
+        .where(eq(events.id, params.eventId));
+    } else if (params.mediaType === 'audio') {
+      await db
+        .update(events)
+        .set({ bgMusicUrl: fileUrl })
+        .where(eq(events.id, params.eventId));
+    } else if (params.mediaType === 'og_image') {
+      await db
+        .update(events)
+        .set({ ogImageUrl: fileUrl })
+        .where(eq(events.id, params.eventId));
+    } else if (params.mediaType === 'qris') {
+      await db
+        .insert(eventGiftDetails)
+        .values({
+          eventId: params.eventId,
+          qrisImageUrl: fileUrl,
+        })
+        .onConflictDoUpdate({
+          target: eventGiftDetails.eventId,
+          set: { qrisImageUrl: fileUrl },
+        });
+    }
+
+    return {
+      id: mediaRecord.id,
+      eventId: mediaRecord.eventId,
+      fileKey: mediaRecord.fileKey,
+      fileUrl: mediaRecord.fileUrl,
+      mediaType: mediaRecord.mediaType,
+      mimeType: mediaRecord.mimeType,
+      fileSize: mediaRecord.fileSize,
+      slotIdentifier: mediaRecord.slotIdentifier,
+      sortOrder: mediaRecord.sortOrder,
+    };
+  }
 }
 
 export const mediaService = new MediaService();

@@ -123,6 +123,14 @@ export const Step4GiftsMedia: React.FC<Step4Props> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!eventId) {
+      setUploadError(
+        'ID acara belum dibuat. Harap isi dan simpan Informasi Dasar di Langkah 1 terlebih dahulu.'
+      );
+      if (coverInputRef.current) coverInputRef.current.value = '';
+      return;
+    }
+
     setIsUploadingCover(true);
     setUploadError(null);
     setCoverCompressInfo(null);
@@ -160,6 +168,14 @@ export const Step4GiftsMedia: React.FC<Step4Props> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!eventId) {
+      setUploadError(
+        'ID acara belum dibuat. Harap isi dan simpan Informasi Dasar di Langkah 1 terlebih dahulu.'
+      );
+      if (qrisInputRef.current) qrisInputRef.current.value = '';
+      return;
+    }
+
     setIsUploadingQris(true);
     setUploadError(null);
 
@@ -189,6 +205,14 @@ export const Step4GiftsMedia: React.FC<Step4Props> = ({
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
+
+    if (!eventId) {
+      setUploadError(
+        'ID acara belum dibuat. Harap isi dan simpan Informasi Dasar di Langkah 1 terlebih dahulu.'
+      );
+      if (galleryInputRef.current) galleryInputRef.current.value = '';
+      return;
+    }
 
     setIsUploadingGallery(true);
     setUploadError(null);
