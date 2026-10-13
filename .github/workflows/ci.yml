@@ -39,6 +39,11 @@ jobs:
         run: pnpm turbo typecheck
 
       - name: Turbo Test
+        env:
+          NODE_ENV: test
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/inveeta_dev"
+          BETTER_AUTH_SECRET: "dummy_secret_for_ci_build_minimum_32_characters_long"
+          BETTER_AUTH_URL: "http://localhost:3000"
         run: pnpm turbo test
 
       - name: Turbo Build

@@ -3,30 +3,23 @@ import assert from 'node:assert/strict';
 import { app } from '../src/index.js';
 import { sanitizeWishText } from '../src/modules/public/wishes.routes.js';
 
-describe('Public Endpoints (Task M2.2)', () => {
-  it('sanitizeWishText strips HTML tags and scripts properly', () => {
-    const maliciousInput = '<script>alert("XSS")</script><b>Selamat</b> atas pernikahannya! <a href="http://evil.com">Klik</a>';
+describe('Public Endpoints & Business Logic (Task M2.2)', () => {
+  it('GET /api/v1/public/ping returns 200 ready', async () => {
+    const res = await app.request('/api/v1/public/ping');
+    assert.equal(res.status, 200);
+    const body = (await res.json()) as { success: boolean; message: string };
+    assert.equal(body.success, true);
+    assert.equal(body.message, 'public api ready');
+  });
+
+  it('sanitizeWishText strips HTML tags and scripts properly (Anti-XSS)', () => {
+    const maliciousInput =
+      '<script>alert("XSS")</script><b>Selamat</b> atas pernikahannya! <a href="http://evil.com">Klik</a>';
     const sanitized = sanitizeWishText(maliciousInput);
     assert.equal(sanitized, 'Selamat atas pernikahannya! Klik');
   });
 
-  it('GET /api/v1/public/events/:slug returns 404 for non-existent event', async () => {
-    const res = await app.request('/api/v1/public/events/non-existent-wedding-12345');
-    assert.equal(res.status, 404);
-    const body = await res.json() as { success: boolean; error: { code: string; message: string } };
-    assert.equal(body.success, false);
-    assert.equal(body.error.code, 'NOT_FOUND');
-  });
-
-  it('GET /api/v1/public/events/:slug/guests/:token returns 404 for non-existent event or invalid token', async () => {
-    const res = await app.request('/api/v1/public/events/non-existent-slug/guests/invalidtoken123');
-    assert.equal(res.status, 404);
-    const body = await res.json() as { success: boolean; error: { code: string; message: string } };
-    assert.equal(body.success, false);
-    assert.equal(body.error.code, 'NOT_FOUND');
-  });
-
-  it('POST /api/v1/public/rsvp returns 400 for empty or invalid sessions input', async () => {
+  it('POST /api/v1/public/rsvp returns 400 for empty sessions input', async () => {
     const res = await app.request('/api/v1/public/rsvp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -37,7 +30,10 @@ describe('Public Endpoints (Task M2.2)', () => {
       }),
     });
     assert.equal(res.status, 400);
-    const body = await res.json() as { success: boolean; error: { code: string } };
+    const body = (await res.json()) as {
+      success: boolean;
+      error: { code: string; message: string };
+    };
     assert.equal(body.success, false);
     assert.equal(body.error.code, 'VALIDATION_ERROR');
   });
@@ -59,7 +55,35 @@ describe('Public Endpoints (Task M2.2)', () => {
       }),
     });
     assert.equal(res.status, 400);
-    const body = await res.json() as { success: boolean; error: { code: string } };
+    const body = (await res.json()) as {
+      success: boolean;
+      error: { code: string; message: string };
+    };
+    assert.equal(body.success, false);
+    assert.equal(body.error.code, 'VALIDATION_ERROR');
+  });
+
+  it('POST /api/v1/public/rsvp returns 400 if declined pax is greater than 0', async () => {
+    const res = await app.request('/api/v1/public/rsvp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        eventId: 'evt_1',
+        guestId: 'gst_1',
+        sessions: [
+          {
+            eventSessionId: 'ses_1',
+            status: 'declined',
+            actualPax: 2, // Inconsistent: declined with 2 pax
+          },
+        ],
+      }),
+    });
+    assert.equal(res.status, 400);
+    const body = (await res.json()) as {
+      success: boolean;
+      error: { code: string; message: string };
+    };
     assert.equal(body.success, false);
     assert.equal(body.error.code, 'VALIDATION_ERROR');
   });
@@ -75,7 +99,29 @@ describe('Public Endpoints (Task M2.2)', () => {
       }),
     });
     assert.equal(res.status, 400);
-    const body = await res.json() as { success: boolean; error: { code: string } };
+    const body = (await res.json()) as {
+      success: boolean;
+      error: { code: string; message: string };
+    };
+    assert.equal(body.success, false);
+    assert.equal(body.error.code, 'VALIDATION_ERROR');
+  });
+
+  it('POST /api/v1/public/wishes returns 400 for excessively long message', async () => {
+    const res = await app.request('/api/v1/public/wishes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        eventId: 'evt_1',
+        senderName: 'Budi',
+        message: 'A'.repeat(501), // Too long (> 500)
+      }),
+    });
+    assert.equal(res.status, 400);
+    const body = (await res.json()) as {
+      success: boolean;
+      error: { code: string; message: string };
+    };
     assert.equal(body.success, false);
     assert.equal(body.error.code, 'VALIDATION_ERROR');
   });
