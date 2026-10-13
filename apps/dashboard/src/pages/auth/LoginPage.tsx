@@ -1,7 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Sparkles, AlertCircle, ArrowRight } from 'lucide-react';
-import { signIn } from '../../lib/auth-client.js';
+import { Sparkles, AlertCircle, ArrowRight, Mail, Lock, Loader2 } from 'lucide-react';
+import { signIn } from '@/lib/auth-client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -11,7 +22,9 @@ export const LoginPage: React.FC = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const destination = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard';
+  const destination =
+    (location.state as { from?: { pathname: string } })?.from?.pathname ||
+    '/dashboard';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,14 +39,16 @@ export const LoginPage: React.FC = () => {
 
       if (res.error) {
         setErrorMessage(
-          res.error.message || 'Email atau password salah. Silakan coba lagi.'
+          res.error.message || 'Kombinasi email atau password salah. Silakan coba kembali.'
         );
       } else {
         navigate(destination, { replace: true });
       }
     } catch (err) {
       setErrorMessage(
-        err instanceof Error ? err.message : 'Terjadi kesalahan saat masuk'
+        err instanceof Error
+          ? err.message
+          : 'Terjadi gangguan jaringan saat masuk. Silakan coba lagi.'
       );
     } finally {
       setIsLoading(false);
@@ -41,101 +56,123 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-700 to-brand-500 flex items-center justify-center text-white mx-auto shadow-md">
-          <Sparkles className="w-6 h-6" />
+    <div className="min-h-dvh bg-background flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-6">
+        {/* Brand Header */}
+        <div className="text-center space-y-2">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
+            <Sparkles className="h-6 w-6" />
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground font-serif">
+            Inveeta
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Platform Undangan Pernikahan Digital & Manajemen Tamu
+          </p>
         </div>
-        <h2 className="mt-4 text-3xl font-extrabold text-gray-900 tracking-tight">
-          Masuk ke Inveeta
-        </h2>
-        <p className="mt-2 text-sm text-gray-500">
-          Kelola undangan pernikahan digital dan tamu Anda
-        </p>
-      </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
-        <div className="bg-white py-8 px-6 shadow-sm border border-gray-200 rounded-2xl sm:px-10">
-          {errorMessage && (
-            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start space-x-3 text-red-700 text-sm">
-              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-              <span>{errorMessage}</span>
-            </div>
-          )}
+        {/* Login Card */}
+        <Card className="border-border/80 shadow-sm">
+          <CardHeader className="space-y-1 pb-4">
+            <CardTitle className="text-xl">Masuk ke Dashboard</CardTitle>
+            <CardDescription>
+              Masukkan email dan password akun host Anda untuk melanjutkan.
+            </CardDescription>
+          </CardHeader>
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email
-              </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nama@email.com"
-                  className="appearance-none block w-full px-3.5 py-2.5 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm"
-                />
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-4">
+              {errorMessage && (
+                <div
+                  role="alert"
+                  className="flex items-start gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-3.5 text-xs text-destructive"
+                >
+                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                  <div className="leading-relaxed">{errorMessage}</div>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-xs font-semibold">
+                  Alamat Email
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="nama@email.com"
+                    className="pl-10"
+                    disabled={isLoading}
+                  />
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Password
-              </label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="appearance-none block w-full px-3.5 py-2.5 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm"
-                />
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-xs font-semibold">
+                    Kata Sandi
+                  </Label>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="pl-10"
+                    disabled={isLoading}
+                  />
+                </div>
               </div>
-            </div>
+            </CardContent>
 
-            <div>
-              <button
+            <CardFooter className="flex flex-col gap-4 pt-2">
+              <Button
                 type="submit"
+                className="w-full font-semibold shadow-xs"
                 disabled={isLoading}
-                className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition disabled:opacity-50"
               >
                 {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <span>Memverifikasi Akun...</span>
+                  </>
                 ) : (
                   <>
-                    <span>Masuk</span>
-                    <ArrowRight className="ml-2 w-4 h-4" />
+                    <span>Masuk ke Akun</span>
+                    <ArrowRight className="h-4 w-4 ml-1.5" />
                   </>
                 )}
-              </button>
-            </div>
-          </form>
+              </Button>
 
-          <div className="mt-6 text-center text-sm">
-            <span className="text-gray-500">Belum memiliki akun? </span>
-            <Link
-              to="/register"
-              className="font-medium text-brand-600 hover:text-brand-500"
-            >
-              Daftar sekarang
-            </Link>
-          </div>
-        </div>
+              <div className="text-center text-xs text-muted-foreground">
+                Belum memiliki akun Host?{' '}
+                <Link
+                  to="/register"
+                  className="font-semibold text-primary underline-offset-4 hover:underline"
+                >
+                  Daftar akun baru
+                </Link>
+              </div>
+            </CardFooter>
+          </form>
+        </Card>
+
+        {/* Footer info */}
+        <p className="text-center text-xs text-muted-foreground">
+          Dilindungi oleh sistem otentikasi terenkripsi Better Auth & UU PDP.
+        </p>
       </div>
     </div>
   );

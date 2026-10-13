@@ -1,11 +1,11 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { LoginPage } from './pages/auth/LoginPage.js';
-import { RegisterPage } from './pages/auth/RegisterPage.js';
-import { ProtectedRoute } from './components/ProtectedRoute.js';
-import { DashboardLayout } from './components/layout/DashboardLayout.js';
-import { DashboardOverviewPage } from './pages/dashboard/DashboardOverviewPage.js';
-import { WizardPage } from './pages/wizard/WizardPage.js';
+import { LoginPage } from '@/pages/auth/LoginPage';
+import { RegisterPage } from '@/pages/auth/RegisterPage';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { DashboardOverviewPage } from '@/pages/dashboard/DashboardOverviewPage';
+import { WizardPage } from '@/pages/wizard/WizardPage';
 
 export const App: React.FC = () => {
   return (

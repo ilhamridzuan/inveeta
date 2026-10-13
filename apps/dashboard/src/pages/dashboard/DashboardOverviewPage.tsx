@@ -1,8 +1,29 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { PlusCircle, Calendar, ExternalLink, Sparkles, Clock, Globe } from 'lucide-react';
-import { apiClient } from '../../lib/api-client.js';
+import {
+  Plus,
+  Calendar,
+  ExternalLink,
+  Globe,
+  Clock,
+  Sparkles,
+  CalendarCheck,
+  FileEdit,
+  Layers,
+} from 'lucide-react';
+import { apiClient } from '@/lib/api-client';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 export const DashboardOverviewPage: React.FC = () => {
   const { data: eventsList, isLoading } = useQuery({
@@ -15,68 +36,145 @@ export const DashboardOverviewPage: React.FC = () => {
     },
   });
 
+  const totalEvents = eventsList?.length || 0;
+  const publishedEvents =
+    eventsList?.filter((evt) => evt.isPublished).length || 0;
+  const draftEvents = totalEvents - publishedEvents;
+
   return (
-    <div className="space-y-6">
-      {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+    <div className="space-y-8">
+      {/* Top Banner / Hero Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-            Acara Saya
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl font-serif">
+            Daftar Acara Saya
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Kelola draft formulir wizard dan pantau undangan pernikahan Anda
+          <p className="mt-1 text-sm text-muted-foreground">
+            Kelola formulir wizard, pantau kuota tamu, dan atur detail undangan pernikahan digital Anda.
           </p>
         </div>
-        <Link
-          to="/wizard"
-          className="inline-flex items-center space-x-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition shadow-sm"
-        >
-          <PlusCircle className="w-4 h-4" />
-          <span>Buat Undangan Baru</span>
-        </Link>
+        <div>
+          <Button asChild size="default" className="shadow-xs font-semibold">
+            <Link to="/wizard">
+              <Plus className="h-4 w-4 mr-1.5" />
+              <span>Buat Undangan Baru</span>
+            </Link>
+          </Button>
+        </div>
       </div>
 
-      {/* Events Content */}
+      {/* Metric Summary Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Card className="border-border/80 p-5 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Total Acara
+            </span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
+              <Layers className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-3 text-2xl font-bold tabular-nums text-foreground">
+            {isLoading ? <Skeleton className="h-8 w-12 rounded-md" /> : totalEvents}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Seluruh undangan yang terdaftar
+          </p>
+        </Card>
+
+        <Card className="border-border/80 p-5 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Publikasi Aktif
+            </span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300">
+              <CalendarCheck className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-3 text-2xl font-bold tabular-nums text-foreground">
+            {isLoading ? <Skeleton className="h-8 w-12 rounded-md" /> : publishedEvents}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Dapat diakses langsung oleh tamu
+          </p>
+        </Card>
+
+        <Card className="border-border/80 p-5 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Draft Formulir
+            </span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300">
+              <Clock className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-3 text-2xl font-bold tabular-nums text-foreground">
+            {isLoading ? <Skeleton className="h-8 w-12 rounded-md" /> : draftEvents}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Sedang dalam proses penyusunan
+          </p>
+        </Card>
+      </div>
+
+      {/* Events Grid / Empty State / Structural Loading */}
       {isLoading ? (
-        <div className="py-20 flex flex-col items-center justify-center space-y-3">
-          <div className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-gray-400">Memuat data acara...</p>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((key) => (
+            <Card key={key} className="p-6 space-y-5 border-border/80 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-5 w-24 rounded-full" />
+                <Skeleton className="h-4 w-20 rounded-md" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-4/5 rounded-md" />
+                <Skeleton className="h-4 w-1/2 rounded-md" />
+              </div>
+              <Skeleton className="h-4 w-3/4 rounded-md" />
+              <div className="pt-4 border-t border-border/60 flex items-center justify-between">
+                <Skeleton className="h-8 w-28 rounded-md" />
+                <Skeleton className="h-8 w-20 rounded-md" />
+              </div>
+            </Card>
+          ))}
         </div>
       ) : eventsList && eventsList.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {eventsList.map((evt) => (
-            <div
+            <Card
               key={evt.id}
-              className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition"
+              className="flex flex-col justify-between border-border/80 shadow-2xs transition-shadow hover:shadow-md"
             >
-              <div>
-                <div className="flex items-center justify-between">
-                  <span
-                    className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
-                      evt.isPublished
-                        ? 'bg-green-50 text-green-700 border border-green-200'
-                        : 'bg-amber-50 text-amber-700 border border-amber-200'
-                    }`}
-                  >
-                    {evt.isPublished ? '● Publikasi Aktif' : '○ Draft'}
-                  </span>
-                  <span className="text-xs text-gray-400">
-                    Template: {evt.templateId}
+              <CardHeader className="space-y-3 pb-3">
+                <div className="flex items-center justify-between gap-2">
+                  {evt.isPublished ? (
+                    <Badge variant="success">● Publikasi Aktif</Badge>
+                  ) : (
+                    <Badge variant="warning">○ Draft Formulir</Badge>
+                  )}
+                  <span className="text-[11px] font-medium text-muted-foreground">
+                    Tpl: {evt.templateId}
                   </span>
                 </div>
 
-                <h3 className="mt-4 text-lg font-bold text-gray-900 line-clamp-1">
-                  {evt.title}
-                </h3>
-                <p className="text-xs text-gray-400 mt-1 flex items-center space-x-1">
-                  <Globe className="w-3.5 h-3.5" />
-                  <span>/{evt.slug}</span>
-                </p>
+                <div>
+                  <CardTitle className="text-lg line-clamp-1 leading-snug">
+                    {evt.title}
+                  </CardTitle>
+                  <CardDescription className="mt-1 flex items-center gap-1.5 text-xs">
+                    <Globe className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <span className="font-mono text-muted-foreground/90 line-clamp-1">
+                      /{evt.slug}
+                    </span>
+                  </CardDescription>
+                </div>
+              </CardHeader>
 
-                {evt.eventDate && (
-                  <div className="mt-4 flex items-center text-xs text-gray-500 space-x-1.5">
-                    <Calendar className="w-4 h-4 text-brand-600" />
-                    <span>
+              <CardContent className="space-y-3 pt-0">
+                {evt.eventDate ? (
+                  <div className="flex items-center gap-2 rounded-xl bg-secondary/60 px-3 py-2 text-xs text-foreground/80">
+                    <Calendar className="h-3.5 w-3.5 text-primary shrink-0" />
+                    <span className="tabular-nums font-medium">
                       {new Date(evt.eventDate).toLocaleDateString('id-ID', {
                         day: 'numeric',
                         month: 'long',
@@ -84,52 +182,64 @@ export const DashboardOverviewPage: React.FC = () => {
                       })}
                     </span>
                   </div>
+                ) : (
+                  <div className="flex items-center gap-2 rounded-xl bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                    <Calendar className="h-3.5 w-3.5 shrink-0 opacity-60" />
+                    <span>Jadwal tanggal belum diatur</span>
+                  </div>
                 )}
-              </div>
+              </CardContent>
 
-              <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                <Link
-                  to={`/wizard?id=${evt.id}`}
-                  className="text-xs font-semibold text-brand-600 hover:text-brand-700 inline-flex items-center space-x-1"
-                >
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>Lanjutkan Wizard</span>
-                </Link>
+              <CardFooter className="flex items-center justify-between border-t border-border/60 pt-4">
+                <Button asChild variant="outline" size="sm" className="gap-1.5">
+                  <Link to={`/wizard?id=${evt.id}`}>
+                    <FileEdit className="h-3.5 w-3.5" />
+                    <span>Kelola Acara</span>
+                  </Link>
+                </Button>
 
-                {evt.isPublished && (
-                  <a
-                    href={`http://localhost:3001/${evt.slug}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs text-gray-500 hover:text-gray-800 inline-flex items-center space-x-1"
-                  >
-                    <span>Buka Undangan</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
+                {evt.isPublished ? (
+                  <Button asChild variant="ghost" size="sm" className="gap-1.5 text-primary">
+                    <a
+                      href={`http://localhost:3001/${evt.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Buka halaman undangan publik"
+                    >
+                      <span>Lihat Web</span>
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  </Button>
+                ) : (
+                  <span className="text-[11px] text-muted-foreground">
+                    Belum dipublikasikan
+                  </span>
                 )}
-              </div>
-            </div>
+              </CardFooter>
+            </Card>
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center shadow-sm">
-          <div className="w-16 h-16 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center mx-auto mb-4">
-            <Sparkles className="w-8 h-8" />
+        /* Empty State */
+        <Card className="border-dashed border-border/90 bg-card/50 p-12 text-center shadow-none">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary text-primary">
+            <Sparkles className="h-7 w-7" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900">
-            Belum ada acara yang dibuat
+          <h3 className="mt-4 text-lg font-semibold text-foreground font-serif">
+            Belum Ada Undangan Pernikahan
           </h3>
-          <p className="text-sm text-gray-500 max-w-sm mx-auto mt-1 mb-6">
-            Mulai langkah pertama Anda dengan menyelesaikan wizard 5 langkah untuk membuat undangan pernikahan impian Anda.
+          <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground leading-relaxed">
+            Mulai susun undangan digital pertama Anda. Tentukan jadwal acara, upload foto calon mempelai, dan kelola alokasi kuota tamu dengan mudah.
           </p>
-          <Link
-            to="/wizard"
-            className="inline-flex items-center space-x-2 bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition shadow-sm"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>Mulai Wizard Acara</span>
-          </Link>
-        </div>
+          <div className="mt-6">
+            <Button asChild size="default" className="shadow-xs font-semibold">
+              <Link to="/wizard">
+                <Plus className="h-4 w-4 mr-1.5" />
+                <span>Buat Undangan Pertama</span>
+              </Link>
+            </Button>
+          </div>
+        </Card>
       )}
     </div>
   );
