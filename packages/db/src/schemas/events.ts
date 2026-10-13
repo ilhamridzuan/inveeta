@@ -54,7 +54,7 @@ export const events = pgTable(
     quoteText: text('quote_text'),
     quoteSource: text('quote_source'),
     loveStory: jsonb('love_story').$type<
-      Array<{ year: string; story: string; photoUrl?: string }>
+      Array<{ year: string; story: string; photoUrl?: string | null }>
     >(),
     rsvpDeadline: timestamp('rsvp_deadline', { withTimezone: true }),
     isPublished: boolean('is_published').default(false).notNull(),
