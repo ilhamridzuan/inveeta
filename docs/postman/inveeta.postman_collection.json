@@ -1,0 +1,584 @@
+{
+  "info": {
+    "_postman_id": "c1f7b8a9-4d2e-4b9e-9f3a-12e4f5a6b7c8",
+    "name": "Inveeta API (Development & Testing)",
+    "description": "Koleksi lengkap pengujian endpoint Inveeta API (Milestone M0 s/d M1.3):\n- Autentikasi Better Auth\n- Public Events & Live Slug Availability Check\n- Host Event Lifecycle (Draft, Wizard Step 1-5, Publish, Slug Lock Protection)\n- Cloudflare R2 Direct Upload Media (Presign, Direct PUT, Confirm, Delete)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "testEmail",
+      "value": "host@inveeta.com",
+      "type": "string"
+    },
+    {
+      "key": "testPassword",
+      "value": "Password123!",
+      "type": "string"
+    },
+    {
+      "key": "eventId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "eventSlug",
+      "value": "andi-siti-2026",
+      "type": "string"
+    },
+    {
+      "key": "presignedUploadUrl",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "uploadedFileKey",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "uploadedMimeType",
+      "value": "image/webp",
+      "type": "string"
+    },
+    {
+      "key": "mediaId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00. Health & Probe",
+      "item": [
+        {
+          "name": "Health Check (Database & Server)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Ping Public Routes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/public/ping",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "public", "ping"]
+            }
+          }
+        },
+        {
+          "name": "Ping Manage Routes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/ping",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "ping"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "01. Authentication (Better Auth)",
+      "item": [
+        {
+          "name": "1. Sign Up (Register Host Baru)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Host Demo Inveeta\",\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/sign-up/email",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "sign-up", "email"]
+            }
+          }
+        },
+        {
+          "name": "2. Sign In (Login)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login Berhasil', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/sign-in/email",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "sign-in", "email"]
+            }
+          }
+        },
+        {
+          "name": "3. Get Active Session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/get-session",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "get-session"]
+            }
+          }
+        },
+        {
+          "name": "4. Sign Out (Logout)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/sign-out",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "sign-out"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Public Endpoints",
+      "item": [
+        {
+          "name": "1. Check Slug - Available",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/public/events/andi-siti-nikah/check",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "public", "events", "andi-siti-nikah", "check"]
+            }
+          }
+        },
+        {
+          "name": "2. Check Slug - Reserved Keyword (Tolak)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/public/events/admin/check",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "public", "events", "admin", "check"]
+            }
+          }
+        },
+        {
+          "name": "3. Check Slug - Format Invalid (Tolak)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/public/events/invalid_slug!/check",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "public", "events", "invalid_slug!", "check"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Host Events Lifecycle & Wizard",
+      "item": [
+        {
+          "name": "1. Inisiasi Draft Acara (POST /draft)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data.id) {",
+                  "    pm.collectionVariables.set('eventId', res.data.id);",
+                  "    pm.collectionVariables.set('eventSlug', res.data.slug);",
+                  "    console.log('Event ID disimpan:', res.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"The Wedding of Andi & Siti\",\n  \"slug\": \"{{eventSlug}}\",\n  \"timeZone\": \"Asia/Jakarta\",\n  \"templateId\": \"minimalist-elegance\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/draft",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "draft"]
+            }
+          }
+        },
+        {
+          "name": "2. Get List My Events (GET /mine)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/mine",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "mine"]
+            }
+          }
+        },
+        {
+          "name": "3. Get Event Detail by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}"]
+            }
+          }
+        },
+        {
+          "name": "4. Wizard Step 1: Info Dasar & Tanggal",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"step\": 1,\n  \"data\": {\n    \"title\": \"Pernikahan Andi & Siti Nurhaliza\",\n    \"slug\": \"{{eventSlug}}\",\n    \"timeZone\": \"Asia/Jakarta\",\n    \"eventDate\": \"2026-12-25T08:00:00+07:00\",\n    \"rsvpDeadline\": \"2026-12-20T23:59:59+07:00\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/wizard-step",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "wizard-step"]
+            }
+          }
+        },
+        {
+          "name": "5. Wizard Step 2: Manajemen Sesi Acara & Lokasi",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"step\": 2,\n  \"data\": {\n    \"sessions\": [\n      {\n        \"title\": \"Akad Nikah\",\n        \"startTime\": \"2026-12-25T08:00:00+07:00\",\n        \"endTime\": \"2026-12-25T10:00:00+07:00\",\n        \"locationName\": \"Masjid Agung Sunda Kelapa\",\n        \"address\": \"Jl. Taman Sunda Kelapa No.16, Menteng, Jakarta Pusat\",\n        \"googleMapsUrl\": \"https://maps.app.goo.gl/example1\",\n        \"isPublic\": true,\n        \"sortOrder\": 0\n      },\n      {\n        \"title\": \"Resepsi Pernikahan\",\n        \"startTime\": \"2026-12-25T11:00:00+07:00\",\n        \"endTime\": \"2026-12-25T14:00:00+07:00\",\n        \"locationName\": \"Grand Ballroom Hotel Indonesia Kempinski\",\n        \"address\": \"Jl. M.H. Thamrin No.1, Jakarta Pusat\",\n        \"googleMapsUrl\": \"https://maps.app.goo.gl/example2\",\n        \"isPublic\": false,\n        \"sortOrder\": 1\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/wizard-step",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "wizard-step"]
+            }
+          }
+        },
+        {
+          "name": "6. Wizard Step 3: Mempelai & Kisah Cinta",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"step\": 3,\n  \"data\": {\n    \"brideName\": \"Siti Nurhaliza, S.Kom.\",\n    \"brideNickname\": \"Siti\",\n    \"brideParents\": \"Putri dari Bpk. H. Rahmat & Ibu Hj. Aminah\",\n    \"groomName\": \"Andi Pratama, M.T.\",\n    \"groomNickname\": \"Andi\",\n    \"groomParents\": \"Putra dari Bpk. Bambang & Ibu Sri Wahyuni\",\n    \"quoteText\": \"Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya.\",\n    \"quoteSource\": \"QS. Ar-Rum: 21\",\n    \"loveStory\": [\n      {\n        \"year\": \"2021\",\n        \"story\": \"Pertama kali bertemu di perpustakaan kampus saat menyusun tugas akhir.\"\n      },\n      {\n        \"year\": \"2024\",\n        \"story\": \"Memutuskan untuk melangkah ke jenjang yang lebih serius dengan lamaran resmi keluarga.\"\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/wizard-step",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "wizard-step"]
+            }
+          }
+        },
+        {
+          "name": "7. Wizard Step 4: Rekening Amplop & Foto",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"step\": 4,\n  \"data\": {\n    \"bankAccounts\": [\n      {\n        \"bankName\": \"BCA\",\n        \"accountNumber\": \"1234567890\",\n        \"accountHolder\": \"Andi Pratama\",\n        \"sortOrder\": 0\n      },\n      {\n        \"bankName\": \"Bank Mandiri\",\n        \"accountNumber\": \"9876543210\",\n        \"accountHolder\": \"Siti Nurhaliza\",\n        \"sortOrder\": 1\n      }\n    ],\n    \"giftAddress\": \"Jl. Mawar No. 12, Menteng, Jakarta Pusat (Komp. Perumahan Indah)\",\n    \"giftRecipientName\": \"Andi & Siti\",\n    \"coverPhotoUrl\": \"https://pub-292367d7308b411cac0dd9d8bfcdc2b6.r2.dev/dummy-cover.webp\",\n    \"bgMusicUrl\": \"https://pub-292367d7308b411cac0dd9d8bfcdc2b6.r2.dev/dummy-music.mp3\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/wizard-step",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "wizard-step"]
+            }
+          }
+        },
+        {
+          "name": "8. Wizard Step 5: Template & Warna Tema",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"step\": 5,\n  \"data\": {\n    \"templateId\": \"minimalist-elegance\",\n    \"visualCustomization\": {\n      \"primaryColor\": \"#2D3748\",\n      \"secondaryColor\": \"#E2D9D2\",\n      \"fontFamily\": \"playfair-inter\",\n      \"coverLayout\": \"fullscreen-image\",\n      \"sectionsOrder\": [\"cover\", \"quote\", \"couple\", \"sessions\", \"gallery\", \"rsvp\", \"wishes\", \"gift\"],\n      \"hiddenSections\": []\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/wizard-step",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "wizard-step"]
+            }
+          }
+        },
+        {
+          "name": "9. Publikasikan Acara (POST /publish)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Publikasi Berhasil & Status Live', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.data.isPublished).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/publish",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "publish"]
+            }
+          }
+        },
+        {
+          "name": "10. Uji Coba Mutasi Slug Pasca Publish (Ditolak)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status Code adalah 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Error code SLUG_IMMUTABLE', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.error.code).to.eql('SLUG_IMMUTABLE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"step\": 1,\n  \"data\": {\n    \"title\": \"Mencoba Ubah Slug\",\n    \"slug\": \"slug-baru-terlarang\",\n    \"timeZone\": \"Asia/Jakarta\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/wizard-step",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "wizard-step"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Cloudflare R2 Media Upload",
+      "item": [
+        {
+          "name": "1. Request Presigned PUT URL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data) {",
+                  "    pm.collectionVariables.set('presignedUploadUrl', res.data.uploadUrl);",
+                  "    pm.collectionVariables.set('uploadedFileKey', res.data.fileKey);",
+                  "    pm.collectionVariables.set('uploadedMimeType', res.data.mimeType);",
+                  "    console.log('Presigned URL berhasil didapatkan');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventId\": \"{{eventId}}\",\n  \"mediaType\": \"photo\",\n  \"fileName\": \"foto-prewed.webp\",\n  \"fileSize\": 250000,\n  \"mimeType\": \"image/webp\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/media/presign",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "media", "presign"]
+            }
+          }
+        },
+        {
+          "name": "2. Direct Upload PUT ke Cloudflare R2",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "{{uploadedMimeType}}",
+                "description": "WAJIB IDENTIK DENGAN MIMETYPE PRESIGN (Jebakan 3 AGENTS.md)"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "dummy-webp-binary-content-for-testing"
+            },
+            "url": {
+              "raw": "{{presignedUploadUrl}}",
+              "host": ["{{presignedUploadUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "3. Confirm Upload & Simpan ke DB",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data.id) {",
+                  "    pm.collectionVariables.set('mediaId', res.data.id);",
+                  "    console.log('Media ID disimpan:', res.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventId\": \"{{eventId}}\",\n  \"fileKey\": \"{{uploadedFileKey}}\",\n  \"mediaType\": \"photo\",\n  \"mimeType\": \"{{uploadedMimeType}}\",\n  \"fileSize\": 250000,\n  \"slotIdentifier\": \"gallery_1\",\n  \"sortOrder\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/media/confirm",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "media", "confirm"]
+            }
+          }
+        },
+        {
+          "name": "4. Delete Media dari R2 & DB",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/media/{{mediaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "media", "{{mediaId}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
