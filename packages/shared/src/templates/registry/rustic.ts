@@ -1,4 +1,9 @@
 import type { TemplateDefinition } from '../types.js';
+import {
+  RUSTIC_SECTIONS_ORDER,
+  RUSTIC_ALLOWED_SECTIONS,
+  BASE_FREE_REQUIRED_SECTIONS,
+} from './common.js';
 
 export const rusticGarden: TemplateDefinition = {
   id: 'rustic-garden',
@@ -34,29 +39,9 @@ export const rusticGarden: TemplateDefinition = {
     secondaryColor: '#CAD2C5',
     fontFamily: 'cormorant-montserrat',
     coverLayout: 'split-card',
-    sectionsOrder: [
-      'cover',
-      'quote',
-      'couple',
-      'story',
-      'sessions',
-      'gallery',
-      'rsvp',
-      'wishes',
-      'gift',
-    ],
+    sectionsOrder: [...RUSTIC_SECTIONS_ORDER],
     hiddenSections: [],
   },
-  allowedSections: [
-    'cover',
-    'quote',
-    'couple',
-    'story',
-    'sessions',
-    'gallery',
-    'rsvp',
-    'wishes',
-    'gift',
-  ],
-  requiredSections: ['cover', 'couple', 'sessions', 'rsvp'],
+  allowedSections: RUSTIC_ALLOWED_SECTIONS,
+  requiredSections: BASE_FREE_REQUIRED_SECTIONS,
 };

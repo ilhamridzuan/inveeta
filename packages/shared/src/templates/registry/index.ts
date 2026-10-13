@@ -4,6 +4,7 @@ import { rusticGarden } from './rustic.js';
 import { javaneseHeritage } from './heritage.js';
 
 export { minimalistElegance, rusticGarden, javaneseHeritage };
+export * from './common.js';
 
 export const TEMPLATE_REGISTRY: Record<string, TemplateDefinition> = {
   [minimalistElegance.id]: minimalistElegance,

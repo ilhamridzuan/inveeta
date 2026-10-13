@@ -1,4 +1,9 @@
 import type { TemplateDefinition } from '../types.js';
+import {
+  BASE_FREE_SECTIONS_ORDER,
+  BASE_FREE_ALLOWED_SECTIONS,
+  BASE_FREE_REQUIRED_SECTIONS,
+} from './common.js';
 
 export const javaneseHeritage: TemplateDefinition = {
   id: 'javanese-heritage',
@@ -34,27 +39,9 @@ export const javaneseHeritage: TemplateDefinition = {
     secondaryColor: '#F4E8C1',
     fontFamily: 'cinzel-lato',
     coverLayout: 'minimal-typography',
-    sectionsOrder: [
-      'cover',
-      'quote',
-      'couple',
-      'sessions',
-      'gallery',
-      'rsvp',
-      'wishes',
-      'gift',
-    ],
+    sectionsOrder: [...BASE_FREE_SECTIONS_ORDER],
     hiddenSections: [],
   },
-  allowedSections: [
-    'cover',
-    'quote',
-    'couple',
-    'sessions',
-    'gallery',
-    'rsvp',
-    'wishes',
-    'gift',
-  ],
-  requiredSections: ['cover', 'couple', 'sessions', 'rsvp'],
+  allowedSections: BASE_FREE_ALLOWED_SECTIONS,
+  requiredSections: BASE_FREE_REQUIRED_SECTIONS,
 };

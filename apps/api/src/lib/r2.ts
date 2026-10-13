@@ -12,10 +12,12 @@ const accessKeyId = process.env.R2_ACCESS_KEY_ID || '';
 const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY || '';
 
 export const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || 'inveeta-storage';
-export const R2_PUBLIC_URL = (
+const rawPublicUrl =
   process.env.R2_PUBLIC_URL ||
-  'https://pub-292367d7308b411cac0dd9d8bfcdc2b6.r2.dev'
-).replace(/\/+$/, '');
+  'https://pub-292367d7308b411cac0dd9d8bfcdc2b6.r2.dev';
+export const R2_PUBLIC_URL = rawPublicUrl.endsWith('/')
+  ? rawPublicUrl.slice(0, -1)
+  : rawPublicUrl;
 
 export const r2Client = new S3Client({
   region: 'auto',

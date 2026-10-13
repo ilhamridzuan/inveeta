@@ -1,11 +1,59 @@
 import { fileURLToPath } from 'node:url';
 import {
   ListObjectsV2Command,
-  DeleteObjectCommand,
+  DeleteObjectsCommand,
+  type _Object,
 } from '@aws-sdk/client-s3';
 import { db, eventMedia } from '@inveeta/db';
-import { eq } from 'drizzle-orm';
+import { inArray } from 'drizzle-orm';
 import { r2Client, R2_BUCKET_NAME } from '../lib/r2.js';
+
+async function fetchAllEventsObjects(
+  token?: string
+): Promise<_Object[]> {
+  const listCommand = new ListObjectsV2Command({
+    Bucket: R2_BUCKET_NAME,
+    Prefix: 'events/',
+    ContinuationToken: token,
+  });
+
+  const listResult = await r2Client.send(listCommand);
+  const currentObjects = listResult.Contents || [];
+
+  if (!listResult.NextContinuationToken) {
+    return currentObjects;
+  }
+
+  const nextObjects = await fetchAllEventsObjects(
+    listResult.NextContinuationToken
+  );
+  return [...currentObjects, ...nextObjects];
+}
+
+async function batchDeleteKeys(keys: string[]): Promise<number> {
+  if (keys.length === 0) return 0;
+
+  const chunkSize = 1000;
+  const chunks: string[][] = [];
+  for (let i = 0; i < keys.length; i += chunkSize) {
+    chunks.push(keys.slice(i, i + chunkSize));
+  }
+
+  const deletePromises = chunks.map((chunk) =>
+    r2Client.send(
+      new DeleteObjectsCommand({
+        Bucket: R2_BUCKET_NAME,
+        Delete: {
+          Objects: chunk.map((key) => ({ Key: key })),
+          Quiet: true,
+        },
+      })
+    )
+  );
+
+  await Promise.all(deletePromises);
+  return keys.length;
+}
 
 export async function cleanupOrphanMedia(): Promise<{
   checkedCount: number;
@@ -13,62 +61,44 @@ export async function cleanupOrphanMedia(): Promise<{
 }> {
   console.log('[Cleanup Orphan Media] Memulai pemindaian file yatim di R2...');
 
-  let continuationToken: string | undefined;
-  let checkedCount = 0;
-  let deletedCount = 0;
   const cutoffTime = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 jam yang lalu
 
   try {
-    do {
-      const listCommand = new ListObjectsV2Command({
-        Bucket: R2_BUCKET_NAME,
-        Prefix: 'events/',
-        ContinuationToken: continuationToken,
-      });
+    const allObjects = await fetchAllEventsObjects();
+    const checkedCount = allObjects.length;
 
-      const listResult = await r2Client.send(listCommand);
-      const objects = listResult.Contents || [];
+    // Filter kandidat yang berumur lebih dari 24 jam
+    const candidateKeys = allObjects
+      .filter((obj) => obj.Key && (!obj.LastModified || obj.LastModified <= cutoffTime))
+      .map((obj) => obj.Key as string);
 
-      for (const obj of objects) {
-        if (!obj.Key) continue;
-        checkedCount++;
+    if (candidateKeys.length === 0) {
+      console.log(
+        `[Cleanup Orphan Media] Selesai: ${checkedCount} file diperiksa, 0 file yatim dihapus.`
+      );
+      return { checkedCount, deletedCount: 0 };
+    }
 
-        // Jika file berumur kurang dari 24 jam, biarkan (mungkin sedang proses upload/confirm)
-        if (obj.LastModified && obj.LastModified > cutoffTime) {
-          continue;
-        }
+    // Query database secara batch untuk mencari fileKey yang terdaftar
+    const existingRecords = await db
+      .select({ fileKey: eventMedia.fileKey })
+      .from(eventMedia)
+      .where(inArray(eventMedia.fileKey, candidateKeys));
 
-        // Cek apakah key terdaftar di tabel event_media
-        const [existing] = await db
-          .select({ id: eventMedia.id })
-          .from(eventMedia)
-          .where(eq(eventMedia.fileKey, obj.Key))
-          .limit(1);
+    const existingKeySet = new Set(existingRecords.map((r) => r.fileKey));
+    const orphanKeys = candidateKeys.filter((key) => !existingKeySet.has(key));
 
-        if (!existing) {
-          console.log(`[Cleanup] Menghapus file yatim di R2: ${obj.Key}`);
-          await r2Client.send(
-            new DeleteObjectCommand({
-              Bucket: R2_BUCKET_NAME,
-              Key: obj.Key,
-            })
-          );
-          deletedCount++;
-        }
-      }
-
-      continuationToken = listResult.NextContinuationToken;
-    } while (continuationToken);
+    const deletedCount = await batchDeleteKeys(orphanKeys);
 
     console.log(
       `[Cleanup Orphan Media] Selesai: ${checkedCount} file diperiksa, ${deletedCount} file yatim dihapus.`
     );
+
+    return { checkedCount, deletedCount };
   } catch (error) {
     console.error('[Cleanup Orphan Media Error]:', error);
     throw error;
   }
-
-  return { checkedCount, deletedCount };
 }
 
 // Eksekusi jika dijalankan secara langsung via CLI

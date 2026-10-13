@@ -22,6 +22,31 @@ import {
   NotFoundError,
 } from '../../utils/errors.js';
 
+function resolveMediaFolder(mediaType: string): string {
+  switch (mediaType) {
+    case 'audio':
+      return 'audio';
+    case 'qris':
+      return 'qris';
+    case 'og_image':
+      return 'og';
+    default:
+      return 'photos';
+  }
+}
+
+function resolveFileExtension(fileName: string, mimeType: string): string {
+  const parsedExt = path.extname(fileName).toLowerCase();
+  if (parsedExt) {
+    return parsedExt;
+  }
+
+  if (mimeType === 'image/webp') return '.webp';
+  if (mimeType === 'image/png') return '.png';
+  if (mimeType.startsWith('audio')) return '.mp3';
+  return '.jpg';
+}
+
 export class MediaService {
   /**
    * Menghasilkan Presigned PUT URL Cloudflare R2 dengan batas waktu (TTL) 10 menit.
@@ -71,21 +96,8 @@ export class MediaService {
     }
 
     // 3. Tentukan folder dan ekstensi file
-    let folder = 'photos';
-    if (input.mediaType === 'audio') folder = 'audio';
-    else if (input.mediaType === 'qris') folder = 'qris';
-    else if (input.mediaType === 'og_image') folder = 'og';
-
-    const parsedExt = path.extname(input.fileName).toLowerCase();
-    const ext =
-      parsedExt ||
-      (input.mimeType === 'image/webp'
-        ? '.webp'
-        : input.mimeType === 'image/png'
-          ? '.png'
-          : input.mimeType.startsWith('audio')
-            ? '.mp3'
-            : '.jpg');
+    const folder = resolveMediaFolder(input.mediaType);
+    const ext = resolveFileExtension(input.fileName, input.mimeType);
 
     const uniqueId = generateId(16);
     const fileKey = `events/${input.eventId}/${folder}/${uniqueId}${ext}`;
