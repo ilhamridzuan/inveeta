@@ -25,7 +25,7 @@ export const app = new Hono()
   .use('*', securityHeadersMiddleware)
   .onError(globalErrorHandler)
   // 1. Better Auth handler
-  .on(['POST', 'GET'], '/api/auth/**', (c) => {
+  .on(['POST', 'GET'], '/api/auth/*', (c) => {
     return auth.handler(c.req.raw);
   })
   // 2. Health check endpoint (Liveness & Readiness probe)
