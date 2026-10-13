@@ -3,10 +3,10 @@ import Image from 'next/image';
 import type { PublicEventDTO } from '@inveeta/shared';
 
 interface LoveStorySectionProps {
-  event: PublicEventDTO;
+  readonly event: PublicEventDTO;
 }
 
-export function LoveStorySection({ event }: LoveStorySectionProps) {
+export function LoveStorySection({ event }: Readonly<LoveStorySectionProps>) {
   if (!event.loveStory || event.loveStory.length === 0) return null;
 
   return (

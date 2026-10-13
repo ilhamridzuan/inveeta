@@ -11,7 +11,7 @@ import { DigitalGiftSection } from './static/DigitalGiftSection';
 
 const SECTION_COMPONENTS: Record<
   string,
-  React.ComponentType<{ event: PublicEventDTO }>
+  React.ComponentType<{ readonly event: PublicEventDTO }>
 > = {
   cover: CoverSection,
   quote: QuoteSection,
@@ -23,7 +23,7 @@ const SECTION_COMPONENTS: Record<
 };
 
 interface TemplateRendererProps {
-  event: PublicEventDTO;
+  readonly event: PublicEventDTO;
 }
 
 /**
@@ -31,7 +31,7 @@ interface TemplateRendererProps {
  * Menyuntikkan CSS Variables tema ke root element dan merender
  * urutan section berdasarkan konfigurasi visual Host.
  */
-export function TemplateRenderer({ event }: TemplateRendererProps) {
+export function TemplateRenderer({ event }: Readonly<TemplateRendererProps>) {
   const { visualCustomization } = event;
   const sectionsOrder = visualCustomization?.sectionsOrder || [
     'cover',

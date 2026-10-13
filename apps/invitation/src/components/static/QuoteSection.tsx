@@ -2,10 +2,10 @@ import React from 'react';
 import type { PublicEventDTO } from '@inveeta/shared';
 
 interface QuoteSectionProps {
-  event: PublicEventDTO;
+  readonly event: PublicEventDTO;
 }
 
-export function QuoteSection({ event }: QuoteSectionProps) {
+export function QuoteSection({ event }: Readonly<QuoteSectionProps>) {
   if (!event.quoteText) return null;
 
   return (

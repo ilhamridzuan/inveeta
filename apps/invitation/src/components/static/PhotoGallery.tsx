@@ -3,10 +3,10 @@ import Image from 'next/image';
 import type { PublicEventDTO } from '@inveeta/shared';
 
 interface PhotoGalleryProps {
-  event: PublicEventDTO;
+  readonly event: PublicEventDTO;
 }
 
-export function PhotoGallery({ event }: PhotoGalleryProps) {
+export function PhotoGallery({ event }: Readonly<PhotoGalleryProps>) {
   // Ambil media foto galeri (mengecualikan slot tunggal khusus cover dan profil jika ada foto khusus)
   const galleryPhotos = event.media.filter(
     (m) =>

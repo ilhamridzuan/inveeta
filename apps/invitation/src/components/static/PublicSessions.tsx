@@ -4,10 +4,10 @@ import { formatEventDateTime } from '@inveeta/shared';
 import { MapPin, Clock, ExternalLink, Navigation } from 'lucide-react';
 
 interface PublicSessionsProps {
-  event: PublicEventDTO;
+  readonly event: PublicEventDTO;
 }
 
-export function PublicSessions({ event }: PublicSessionsProps) {
+export function PublicSessions({ event }: Readonly<PublicSessionsProps>) {
   if (!event.sessions || event.sessions.length === 0) return null;
 
   return (

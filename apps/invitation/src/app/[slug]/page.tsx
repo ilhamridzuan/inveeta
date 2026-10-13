@@ -4,7 +4,7 @@ import { getCachedPublicEvent } from '@/lib/api-client';
 import { TemplateRenderer } from '@/components/TemplateRenderer';
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  readonly params: Promise<{ slug: string }>;
 }
 
 /**
@@ -13,7 +13,7 @@ interface PageProps {
  */
 export async function generateMetadata({
   params,
-}: PageProps): Promise<Metadata> {
+}: Readonly<PageProps>): Promise<Metadata> {
   const { slug } = await params;
   const event = await getCachedPublicEvent(slug);
 
@@ -65,7 +65,9 @@ export async function generateMetadata({
  * Server Component Halaman Undangan Publik Umum (TDD §7.4).
  * Di-render di server dan di-cache melalui On-Demand ISR Tags.
  */
-export default async function PublicEventPage({ params }: PageProps) {
+export default async function PublicEventPage({
+  params,
+}: Readonly<PageProps>) {
   const { slug } = await params;
   const event = await getCachedPublicEvent(slug);
 

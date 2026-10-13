@@ -5,10 +5,12 @@ import { Gift, CreditCard, QrCode, MapPin } from 'lucide-react';
 import { CopyButton } from './CopyButton';
 
 interface DigitalGiftSectionProps {
-  event: PublicEventDTO;
+  readonly event: PublicEventDTO;
 }
 
-export function DigitalGiftSection({ event }: DigitalGiftSectionProps) {
+export function DigitalGiftSection({
+  event,
+}: Readonly<DigitalGiftSectionProps>) {
   const giftDetails = event.giftDetails;
   if (!giftDetails) return null;
 

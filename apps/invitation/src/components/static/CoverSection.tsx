@@ -5,7 +5,7 @@ import { formatEventDateTime } from '@inveeta/shared';
 import { Calendar, Heart } from 'lucide-react';
 
 interface CoverSectionProps {
-  event: PublicEventDTO;
+  readonly event: PublicEventDTO;
 }
 
 function calculateStaticCountdown(targetDateIso: string) {
@@ -20,7 +20,7 @@ function calculateStaticCountdown(targetDateIso: string) {
   return { days, hours, minutes };
 }
 
-export function CoverSection({ event }: CoverSectionProps) {
+export function CoverSection({ event }: Readonly<CoverSectionProps>) {
   const coverMedia =
     event.media.find((m) => m.slotIdentifier === 'cover_photo') ||
     event.media.find((m) => m.mediaType === 'photo');

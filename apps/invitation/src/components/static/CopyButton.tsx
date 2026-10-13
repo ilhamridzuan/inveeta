@@ -4,11 +4,14 @@ import React, { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
 
 interface CopyButtonProps {
-  textToCopy: string;
-  label?: string;
+  readonly textToCopy: string;
+  readonly label?: string;
 }
 
-export function CopyButton({ textToCopy, label = 'Salin' }: CopyButtonProps) {
+export function CopyButton({
+  textToCopy,
+  label = 'Salin',
+}: Readonly<CopyButtonProps>) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {

@@ -4,10 +4,10 @@ import type { PublicEventDTO } from '@inveeta/shared';
 import { Heart } from 'lucide-react';
 
 interface CoupleSectionProps {
-  event: PublicEventDTO;
+  readonly event: PublicEventDTO;
 }
 
-export function CoupleSection({ event }: CoupleSectionProps) {
+export function CoupleSection({ event }: Readonly<CoupleSectionProps>) {
   const bridePhoto = event.media.find(
     (m) => m.slotIdentifier === 'bride_photo'
   )?.fileUrl;

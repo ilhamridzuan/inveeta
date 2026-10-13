@@ -99,7 +99,7 @@ async function processBatchRsvp(
     const submittedSessions: RsvpSubmittedSession[] = [];
     const now = new Date();
 
-    // 4. Lakukan looping: for (const sessionItem of input.sessions)
+    // 4. Lakukan looping validasi untuk seluruh sesi (Jebakan 1)
     for (const sessionItem of input.sessions) {
       // a. Verifikasi alokasi di guestSessionAllocations
       if (!allocatedSessionIds.has(sessionItem.eventSessionId)) {
@@ -125,9 +125,11 @@ async function processBatchRsvp(
           `Jumlah kehadiran (${sessionItem.actualPax} pax) melebihi batas maksimal alokasi (${guest.maxPax} pax)`
         );
       }
+    }
 
-      // d. Upsert ke rsvps dengan onConflictDoUpdate({ target: [guestId, eventSessionId] })
-      const [upserted] = await tx
+    // d. Upsert ke rsvps dengan onConflictDoUpdate({ target: [guestId, eventSessionId] })
+    const upsertPromises = input.sessions.map((sessionItem) =>
+      tx
         .insert(rsvps)
         .values({
           guestId: guest.id,
@@ -149,15 +151,20 @@ async function processBatchRsvp(
             updatedAt: now,
           },
         })
-        .returning();
+        .returning()
+    );
 
-      submittedSessions.push({
-        id: upserted.id,
-        eventSessionId: upserted.eventSessionId,
-        status: upserted.status as 'attending' | 'declined',
-        actualPax: upserted.actualPax,
-        updatedAt: upserted.updatedAt.toISOString(),
-      });
+    const upsertedResults = await Promise.all(upsertPromises);
+    for (const [upserted] of upsertedResults) {
+      if (upserted) {
+        submittedSessions.push({
+          id: upserted.id,
+          eventSessionId: upserted.eventSessionId,
+          status: upserted.status as 'attending' | 'declined',
+          actualPax: upserted.actualPax,
+          updatedAt: upserted.updatedAt.toISOString(),
+        });
+      }
     }
 
     return {
