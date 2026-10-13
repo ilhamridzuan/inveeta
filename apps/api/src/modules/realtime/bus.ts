@@ -23,7 +23,7 @@ export interface AppEventBus {
 }
 
 class InMemoryEventBus implements AppEventBus {
-  private emitter = new EventEmitter();
+  private readonly emitter = new EventEmitter();
 
   constructor() {
     // Hindari MaxListenersExceededWarning pada listener event bus tunggal

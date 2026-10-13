@@ -2,7 +2,7 @@ import { appEventBus, type AppDomainEvent, type RealtimeEventType } from './bus.
 
 export class SSEChannelHub {
   // Map eventId -> (Map clientId -> ReadableStreamDefaultController)
-  private channels = new Map<string, Map<string, ReadableStreamDefaultController>>();
+  private readonly channels = new Map<string, Map<string, ReadableStreamDefaultController>>();
 
   constructor() {
     // Daftarkan listener otomatis ke seluruh event domain dari Event Bus
