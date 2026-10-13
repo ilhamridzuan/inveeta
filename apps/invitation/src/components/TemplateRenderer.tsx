@@ -9,9 +9,35 @@ import { PublicSessions } from './static/PublicSessions';
 import { PhotoGallery } from './static/PhotoGallery';
 import { DigitalGiftSection } from './static/DigitalGiftSection';
 
+// Client Component Islands
+import { CoverModal } from './dynamic/CoverModal';
+import { BgmPlayerIsland } from './dynamic/BgmPlayerIsland';
+import { GuestGreetingIsland } from './dynamic/GuestGreetingIsland';
+import { RsvpInteractiveForm } from './dynamic/RsvpInteractiveForm';
+import { LiveWishesIsland } from './dynamic/LiveWishesIsland';
+
+interface SectionProps {
+  readonly event: PublicEventDTO;
+  readonly token?: string;
+}
+
+function RsvpSectionWrapper({ event, token }: Readonly<SectionProps>) {
+  return (
+    <RsvpInteractiveForm
+      slug={event.slug}
+      token={token || ''}
+      eventId={event.id}
+    />
+  );
+}
+
+function WishesSectionWrapper({ event }: Readonly<SectionProps>) {
+  return <LiveWishesIsland eventId={event.id} slug={event.slug} />;
+}
+
 const SECTION_COMPONENTS: Record<
   string,
-  React.ComponentType<{ readonly event: PublicEventDTO }>
+  React.ComponentType<SectionProps>
 > = {
   cover: CoverSection,
   quote: QuoteSection,
@@ -20,18 +46,24 @@ const SECTION_COMPONENTS: Record<
   sessions: PublicSessions,
   gallery: PhotoGallery,
   gift: DigitalGiftSection,
+  rsvp: RsvpSectionWrapper,
+  wishes: WishesSectionWrapper,
 };
 
 interface TemplateRendererProps {
   readonly event: PublicEventDTO;
+  readonly token?: string;
 }
 
 /**
- * Dynamic Section Template Engine (TDD §10.2).
- * Menyuntikkan CSS Variables tema ke root element dan merender
- * urutan section berdasarkan konfigurasi visual Host.
+ * Dynamic Section Template Engine (TDD §7.4, §10.2).
+ * Menyuntikkan CSS Variables tema ke root element, memuat Server Component statis (0 KB JS),
+ * dan menyisipkan Client Component Islands untuk fitur interaktif & personal.
  */
-export function TemplateRenderer({ event }: Readonly<TemplateRendererProps>) {
+export function TemplateRenderer({
+  event,
+  token,
+}: Readonly<TemplateRendererProps>) {
   const { visualCustomization } = event;
   const sectionsOrder = visualCustomization?.sectionsOrder || [
     'cover',
@@ -39,6 +71,8 @@ export function TemplateRenderer({ event }: Readonly<TemplateRendererProps>) {
     'couple',
     'sessions',
     'gallery',
+    'rsvp',
+    'wishes',
     'gift',
   ];
   const hiddenSections = visualCustomization?.hiddenSections || [];
@@ -52,18 +86,36 @@ export function TemplateRenderer({ event }: Readonly<TemplateRendererProps>) {
     '--font-theme': fontFamily,
   } as React.CSSProperties;
 
+  const musicMedia = event.media.find((m) => m.mediaType === 'audio');
+
   return (
     <div
       className={`template-root min-h-screen text-[var(--color-primary)] font-${fontFamily}`}
       style={customStyles}
     >
+      {/* 1. Modal Pembuka Layar Penuh (Autoplay Policy Workaround) */}
+      <CoverModal event={event} />
+
+      {/* 2. Floating Audio Player Island */}
+      <BgmPlayerIsland musicUrl={musicMedia?.fileUrl} />
+
+      {/* 3. Render Dinamis Urutan Section Acara */}
       {sectionsOrder.map((sectionId) => {
         if (hiddenSections.includes(sectionId)) return null;
+
+        if (sectionId === 'cover') {
+          return (
+            <React.Fragment key="cover">
+              <CoverSection event={event} />
+              {token && <GuestGreetingIsland slug={event.slug} token={token} />}
+            </React.Fragment>
+          );
+        }
 
         const Component = SECTION_COMPONENTS[sectionId];
         if (!Component) return null;
 
-        return <Component key={sectionId} event={event} />;
+        return <Component key={sectionId} event={event} token={token} />;
       })}
     </div>
   );

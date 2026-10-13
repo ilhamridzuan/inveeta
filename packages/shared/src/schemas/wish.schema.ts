@@ -14,3 +14,10 @@ export const createWishSchema = z.object({
     .max(SYSTEM_LIMITS.WISHES.MAX_MESSAGE_LENGTH, `Ucapan maksimal ${SYSTEM_LIMITS.WISHES.MAX_MESSAGE_LENGTH} karakter`),
   senderRelation: z.string().max(50).optional(),
 });
+
+export const getWishesQuerySchema = z.object({
+  limit: z.string().optional(),
+  cursor: z.string().optional(),
+});
+
+export type GetWishesQuery = z.infer<typeof getWishesQuerySchema>;

@@ -6,6 +6,7 @@ import { db, wishes, events } from '@inveeta/db';
 import { eq, and, desc, lt, type SQL } from 'drizzle-orm';
 import {
   createWishSchema,
+  getWishesQuerySchema,
   SYSTEM_LIMITS,
   type CreateWishInput,
   type WishDTO,
@@ -113,10 +114,11 @@ export const publicWishesRoutes = new Hono()
    * Mengambil daftar ucapan publik dengan paginasi berbasis kursor
    * GET /api/v1/public/wishes/:eventId
    */
-  .get('/:eventId', async (c) => {
+  .get('/:eventId', zValidator('query', getWishesQuerySchema), async (c) => {
     const eventId = c.req.param('eventId');
-    const limit = Math.min(Math.max(Number(c.req.query('limit')) || 20, 1), 50);
-    const cursor = c.req.query('cursor');
+    const query = c.req.valid('query');
+    const limit = Math.min(Math.max(Number(query.limit) || 20, 1), 50);
+    const cursor = query.cursor;
 
     const conditions: SQL[] = [
       eq(wishes.eventId, eventId),
