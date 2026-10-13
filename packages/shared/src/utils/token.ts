@@ -42,11 +42,7 @@ export function generateGuestToken(): string {
   const cryptoObj = (globalThis as unknown as { crypto?: CryptoWithGetRandomValues }).crypto;
   if (cryptoObj && typeof cryptoObj.getRandomValues === 'function') {
     cryptoObj.getRandomValues(bytes);
-  } else {
-    for (let i = 0; i < 16; i++) {
-      bytes[i] = Math.floor(Math.random() * 256);
-    }
+    return bytesToBase64Url(bytes);
   }
-
-  return bytesToBase64Url(bytes);
+  throw new Error('CSPRNG (crypto.getRandomValues) is required but not available in this environment');
 }

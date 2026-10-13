@@ -3,10 +3,7 @@ export class AppError extends Error {
     public statusCode: number,
     public code: string,
     message: string,
-    public details?:
-      | Record<string, unknown>
-      | Array<{ field: string; issue: string }>
-      | unknown
+    public details?: unknown
   ) {
     super(message);
     this.name = 'AppError';

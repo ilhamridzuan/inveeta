@@ -4,8 +4,8 @@ import { logger } from 'hono/logger';
 import { sql } from 'drizzle-orm';
 import { db } from '@inveeta/db';
 import * as dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { auth } from './lib/auth.js';
 import {
   corsMiddleware,

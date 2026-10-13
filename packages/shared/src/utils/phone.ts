@@ -2,7 +2,7 @@
  * Normalisasi format nomor telepon WhatsApp ke format E.164 tanpa simbol '+' (contoh: 628123456789).
  */
 export function normalizeWhatsAppNumber(phone: string): string {
-  const cleaned = phone.replace(/[^0-9]/g, '');
+  const cleaned = phone.replace(/\D/g, '');
   if (cleaned.startsWith('0')) return '62' + cleaned.slice(1);
   if (cleaned.startsWith('62')) return cleaned;
   return cleaned;

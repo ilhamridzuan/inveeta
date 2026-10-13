@@ -7,7 +7,7 @@ export const createGuestSchema = z.object({
     .string()
     .min(9, 'Nomor WhatsApp minimal 9 digit')
     .max(16)
-    .regex(/^(?:\+62|62|08)[0-9]{8,13}$/, 'Format nomor WhatsApp tidak valid'),
+    .regex(/^(?:\+62|62|08)\d{8,13}$/, 'Format nomor WhatsApp tidak valid'),
   category: z.enum(GUEST_CATEGORIES).default('Reguler'),
   maxPax: z.number().int().min(1, 'Kuota minimal 1').max(20, 'Kuota maksimal 20 pax').default(2),
   allocatedSessionIds: z.array(z.string()).min(1, 'Pilih minimal satu sesi acara untuk tamu ini'),
@@ -19,7 +19,7 @@ export const updateGuestSchema = z.object({
     .string()
     .min(9, 'Nomor WhatsApp minimal 9 digit')
     .max(16)
-    .regex(/^(?:\+62|62|08)[0-9]{8,13}$/, 'Format nomor WhatsApp tidak valid')
+    .regex(/^(?:\+62|62|08)\d{8,13}$/, 'Format nomor WhatsApp tidak valid')
     .optional(),
   category: z.enum(GUEST_CATEGORIES).optional(),
   maxPax: z.number().int().min(1).max(20).optional(),

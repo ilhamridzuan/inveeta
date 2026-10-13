@@ -366,14 +366,13 @@ ${guestData
 
 // Eksekusi jika dijalankan secara langsung via CLI
 if (process.argv[1]?.endsWith('dev.ts') || process.argv[1]?.endsWith('dev.js')) {
-  runDevSeed()
-    .then(async () => {
-      await pool.end();
-      process.exit(0);
-    })
-    .catch(async (err) => {
-      console.error('❌ Error saat menjalankan seed:', err);
-      await pool.end();
-      process.exit(1);
-    });
+  try {
+    await runDevSeed();
+    await pool.end();
+    process.exit(0);
+  } catch (err) {
+    console.error('❌ Error saat menjalankan seed:', err);
+    await pool.end();
+    process.exit(1);
+  }
 }

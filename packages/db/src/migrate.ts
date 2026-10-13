@@ -1,6 +1,6 @@
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { db, pool } from './client.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -24,5 +24,9 @@ export async function runMigrations() {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  runMigrations().catch(() => process.exit(1));
+  try {
+    await runMigrations();
+  } catch {
+    process.exit(1);
+  }
 }

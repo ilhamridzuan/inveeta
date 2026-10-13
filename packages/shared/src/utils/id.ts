@@ -12,12 +12,9 @@ function getRandomBytes(size: number): Uint8Array {
   const cryptoObj = (globalThis as unknown as { crypto?: CryptoWithGetRandomValues }).crypto;
   if (cryptoObj && typeof cryptoObj.getRandomValues === 'function') {
     cryptoObj.getRandomValues(bytes);
-  } else {
-    for (let i = 0; i < size; i++) {
-      bytes[i] = Math.floor(Math.random() * 256);
-    }
+    return bytes;
   }
-  return bytes;
+  throw new Error('CSPRNG (crypto.getRandomValues) is required but not available in this environment');
 }
 
 /**

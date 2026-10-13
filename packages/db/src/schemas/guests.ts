@@ -1,4 +1,4 @@
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {
   pgTable,
   text,
@@ -9,7 +9,6 @@ import {
   uniqueIndex,
   check,
 } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
 import { generateId } from '@inveeta/shared';
 import { events, eventSessions } from './events.js';
 

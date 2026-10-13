@@ -1,6 +1,6 @@
 import { defineConfig } from 'drizzle-kit';
 import * as dotenv from 'dotenv';
-import path from 'path';
+import path from 'node:path';
 
 // Load .env from root workspace
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
