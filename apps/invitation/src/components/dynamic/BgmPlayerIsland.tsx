@@ -62,8 +62,9 @@ export function BgmPlayerIsland({
         src={audioSrc}
         loop
         preload="auto"
-        aria-hidden="true"
-      />
+      >
+        <track kind="captions" />
+      </audio>
 
       {/* Floating Audio Controller Button */}
       <div className="fixed bottom-6 right-6 z-40">

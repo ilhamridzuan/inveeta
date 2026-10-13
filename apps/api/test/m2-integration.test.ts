@@ -102,7 +102,12 @@ describe('Milestone M2 End-to-End Integration Tests (Task M2.6)', () => {
       }
     });
 
-    it('mengembalikan 404 terstruktur jika slug acara tidak ditemukan', async () => {
+    it('mengembalikan 404 terstruktur jika slug acara tidak ditemukan', async (t) => {
+      if (!isDbConnected) {
+        t.skip('Database tidak terhubung');
+        return;
+      }
+
       const res = await app.request(
         '/api/v1/public/events/slug-palsu-tidak-ada-99999'
       );

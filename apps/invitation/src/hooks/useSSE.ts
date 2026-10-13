@@ -17,6 +17,16 @@ export interface SSEOptions {
  * - Auto-reconnection dengan RANDOMIZED JITTER DELAY (1–5 detik) untuk mencegah thundering herd spike di VPS.
  * - Membaca lastEventId / lastTimestamp untuk pemulihan data tertinggal (.limit(20) di server).
  */
+function getRandomJitter(minMs: number, maxMs: number): number {
+  if (typeof window !== 'undefined' && window.crypto?.getRandomValues) {
+    const array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    const range = maxMs - minMs + 1;
+    return minMs + (array[0] % range);
+  }
+  return minMs;
+}
+
 export function useSSE(
   eventId?: string | null,
   options: Readonly<SSEOptions> = {}
@@ -109,7 +119,7 @@ export function useSSE(
         1000 * 2 ** reconnectAttemptsRef.current,
         15000
       );
-      const jitter = Math.floor(Math.random() * 4000) + 1000; // 1.000ms hingga 5.000ms
+      const jitter = getRandomJitter(1000, 5000); // 1.000ms hingga 5.000ms
       const totalDelay = baseBackoffDelay + jitter;
       reconnectAttemptsRef.current += 1;
 

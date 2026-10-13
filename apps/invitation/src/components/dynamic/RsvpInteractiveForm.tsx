@@ -60,7 +60,7 @@ export function RsvpInteractiveForm({
       }
     }
 
-    load();
+    void load();
 
     return () => {
       isMounted = false;
@@ -305,7 +305,7 @@ export function RsvpInteractiveForm({
                         onChange={(e) =>
                           handlePaxChange(
                             session.sessionId,
-                            parseInt(e.target.value, 10)
+                            Number.parseInt(e.target.value, 10)
                           )
                         }
                         className="rounded-lg border border-gray-300 py-1 px-2.5 bg-white text-xs text-gray-800 font-medium focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:opacity-60"

@@ -65,6 +65,9 @@
     "db:migrate": {
       "cache": false
     },
+    "db:push": {
+      "cache": false
+    },
     "db:studio": {
       "cache": false,
       "persistent": true

@@ -62,7 +62,7 @@ export function LiveWishesIsland({
     }
 
     if (eventId) {
-      loadInitialWishes();
+      void loadInitialWishes();
     }
 
     return () => {
@@ -164,6 +164,59 @@ export function LiveWishesIsland({
     }
   };
 
+  const renderWishesContent = () => {
+    if (loading) {
+      return (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="bg-gray-50/70 border border-gray-100 rounded-2xl p-4 animate-pulse space-y-2"
+            >
+              <div className="h-4 w-28 bg-gray-200 rounded" />
+              <div className="h-3 w-full bg-gray-200/60 rounded" />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (wishes.length === 0) {
+      return (
+        <div className="text-center py-10 bg-gray-50/60 rounded-2xl border border-dashed border-gray-200 text-xs text-gray-500 space-y-1">
+          <p className="font-medium text-gray-700">Belum ada ucapan</p>
+          <p>Jadilah yang pertama mengirimkan doa untuk kedua mempelai!</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+        {wishes.map((w) => (
+          <article
+            key={w.id}
+            className="bg-white border border-gray-200/70 rounded-2xl p-4 shadow-2xs space-y-1.5 transition-all hover:border-gray-300"
+          >
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-semibold text-gray-900">
+                {w.senderName}
+              </span>
+              <time
+                dateTime={w.createdAt}
+                className="text-[10px] text-gray-400"
+              >
+                {formatDate(w.createdAt)}
+              </time>
+            </div>
+            <p className="text-xs text-gray-600 leading-relaxed break-words">
+              {w.message}
+            </p>
+          </article>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <section className="py-20 px-6 max-w-2xl mx-auto space-y-10">
       <div className="text-center space-y-2">
@@ -258,48 +311,7 @@ export function LiveWishesIsland({
           Ucapan Sahabat & Keluarga ({wishes.length})
         </h3>
 
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="bg-gray-50/70 border border-gray-100 rounded-2xl p-4 animate-pulse space-y-2"
-              >
-                <div className="h-4 w-28 bg-gray-200 rounded" />
-                <div className="h-3 w-full bg-gray-200/60 rounded" />
-              </div>
-            ))}
-          </div>
-        ) : wishes.length === 0 ? (
-          <div className="text-center py-10 bg-gray-50/60 rounded-2xl border border-dashed border-gray-200 text-xs text-gray-500 space-y-1">
-            <p className="font-medium text-gray-700">Belum ada ucapan</p>
-            <p>Jadilah yang pertama mengirimkan doa untuk kedua mempelai!</p>
-          </div>
-        ) : (
-          <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
-            {wishes.map((w) => (
-              <article
-                key={w.id}
-                className="bg-white border border-gray-200/70 rounded-2xl p-4 shadow-2xs space-y-1.5 transition-all hover:border-gray-300"
-              >
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-gray-900">
-                    {w.senderName}
-                  </span>
-                  <time
-                    dateTime={w.createdAt}
-                    className="text-[10px] text-gray-400"
-                  >
-                    {formatDate(w.createdAt)}
-                  </time>
-                </div>
-                <p className="text-xs text-gray-600 leading-relaxed break-words">
-                  {w.message}
-                </p>
-              </article>
-            ))}
-          </div>
-        )}
+        {renderWishesContent()}
 
         {/* Load More Button */}
         {hasMore && (

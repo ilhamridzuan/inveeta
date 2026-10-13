@@ -53,7 +53,7 @@ export function GuestGreetingIsland({
     }
 
     if (slug && token) {
-      loadGuest();
+      void loadGuest();
     } else {
       setLoading(false);
     }
