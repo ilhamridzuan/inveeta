@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { zValidator } from '@hono/zod-validator';
+import { zValidator } from '../../utils/validator.js';
 import {
   createDraftEventSchema,
   updateWizardStepSchema,
@@ -8,18 +8,7 @@ import { requireAuth } from '../../middlewares/requireAuth.js';
 import { requireEventOwner } from '../../middlewares/requireEventOwner.js';
 import { eventsService } from './service.js';
 
-/**
- * Rute Publik Acara (/api/v1/public/events/*)
- */
-export const publicEventsRoutes = new Hono()
-  .get('/:slug/check', async (c) => {
-    const slug = c.req.param('slug');
-    const result = await eventsService.checkSlugAvailability(slug);
-    return c.json({
-      success: true,
-      data: result,
-    });
-  });
+export { publicEventsRoutes } from '../public/events.routes.js';
 
 /**
  * Rute Manajemen Acara Host (/api/v1/manage/events/*)
