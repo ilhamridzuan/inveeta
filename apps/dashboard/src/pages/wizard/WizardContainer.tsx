@@ -12,6 +12,7 @@ import {
   ExternalLink,
   ArrowLeft,
   CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
@@ -104,6 +105,7 @@ export const WizardContainer: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [saveSuccessMessage, setSaveSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showPublishSuccessModal, setShowPublishSuccessModal] = useState(false);
 
   // Ambil data acara jika activeEventId ada
@@ -144,6 +146,7 @@ export const WizardContainer: React.FC = () => {
   const handleSaveStep1 = async (data: WizardStep1Input) => {
     setIsSaving(true);
     setSaveSuccessMessage(null);
+    setErrorMessage(null);
     try {
       let currentId = activeEventId;
 
@@ -198,8 +201,7 @@ export const WizardContainer: React.FC = () => {
       setSaveSuccessMessage('Informasi dasar berhasil disimpan');
       setCurrentStep(2);
     } catch (err) {
-      console.error('Error saving step 1:', err);
-      alert(err instanceof Error ? err.message : 'Gagal menyimpan draft');
+      setErrorMessage(err instanceof Error ? err.message : 'Gagal menyimpan draft');
     } finally {
       setIsSaving(false);
     }
@@ -209,6 +211,8 @@ export const WizardContainer: React.FC = () => {
   const handleSaveStep2 = async (data: WizardStep2Input) => {
     if (!activeEventId) return;
     setIsSaving(true);
+    setSaveSuccessMessage(null);
+    setErrorMessage(null);
     try {
       const res = await apiClient.api.v1.manage.events[':id']['wizard-step'].$put({
         param: { id: activeEventId },
@@ -229,7 +233,7 @@ export const WizardContainer: React.FC = () => {
       setSaveSuccessMessage('Rangkaian sesi acara berhasil disimpan');
       setCurrentStep(3);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Gagal menyimpan sesi');
+      setErrorMessage(err instanceof Error ? err.message : 'Gagal menyimpan sesi');
     } finally {
       setIsSaving(false);
     }
@@ -239,6 +243,8 @@ export const WizardContainer: React.FC = () => {
   const handleSaveStep3 = async (data: WizardStep3Input) => {
     if (!activeEventId) return;
     setIsSaving(true);
+    setSaveSuccessMessage(null);
+    setErrorMessage(null);
     try {
       const res = await apiClient.api.v1.manage.events[':id']['wizard-step'].$put({
         param: { id: activeEventId },
@@ -259,7 +265,7 @@ export const WizardContainer: React.FC = () => {
       setSaveSuccessMessage('Profil pengantin & kisah cinta berhasil disimpan');
       setCurrentStep(4);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Gagal menyimpan biodata');
+      setErrorMessage(err instanceof Error ? err.message : 'Gagal menyimpan biodata');
     } finally {
       setIsSaving(false);
     }
@@ -269,6 +275,8 @@ export const WizardContainer: React.FC = () => {
   const handleSaveStep4 = async (data: WizardStep4Input) => {
     if (!activeEventId) return;
     setIsSaving(true);
+    setSaveSuccessMessage(null);
+    setErrorMessage(null);
     try {
       const res = await apiClient.api.v1.manage.events[':id']['wizard-step'].$put({
         param: { id: activeEventId },
@@ -289,7 +297,7 @@ export const WizardContainer: React.FC = () => {
       setSaveSuccessMessage('Hadiah digital & galeri foto berhasil disimpan');
       setCurrentStep(5);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Gagal menyimpan data media');
+      setErrorMessage(err instanceof Error ? err.message : 'Gagal menyimpan data media');
     } finally {
       setIsSaving(false);
     }
@@ -299,6 +307,8 @@ export const WizardContainer: React.FC = () => {
   const handleSaveStep5 = async (data: WizardStep5Input) => {
     if (!activeEventId) return;
     setIsSaving(true);
+    setSaveSuccessMessage(null);
+    setErrorMessage(null);
     try {
       const res = await apiClient.api.v1.manage.events[':id']['wizard-step'].$put({
         param: { id: activeEventId },
@@ -318,7 +328,7 @@ export const WizardContainer: React.FC = () => {
       await refetchEvent();
       setSaveSuccessMessage('Pengaturan tema template berhasil disimpan');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Gagal menyimpan template');
+      setErrorMessage(err instanceof Error ? err.message : 'Gagal menyimpan template');
     } finally {
       setIsSaving(false);
     }
@@ -328,6 +338,8 @@ export const WizardContainer: React.FC = () => {
   const handlePublishEvent = async () => {
     if (!activeEventId) return;
     setIsPublishing(true);
+    setSaveSuccessMessage(null);
+    setErrorMessage(null);
     try {
       const res = await apiClient.api.v1.manage.events[':id'].publish.$post({
         param: { id: activeEventId },
@@ -344,7 +356,7 @@ export const WizardContainer: React.FC = () => {
       await refetchEvent();
       setShowPublishSuccessModal(true);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Gagal mempublikasikan acara');
+      setErrorMessage(err instanceof Error ? err.message : 'Gagal mempublikasikan acara');
     } finally {
       setIsPublishing(false);
     }
@@ -411,28 +423,30 @@ export const WizardContainer: React.FC = () => {
             const isActive = step.num === currentStep;
             const canNavigate = Boolean(activeEventId) || step.num === 1;
 
+            let buttonClasses = 'text-muted-foreground opacity-60';
+            if (isActive) {
+              buttonClasses = 'bg-primary/10 text-primary font-semibold';
+            } else if (isCompleted) {
+              buttonClasses = 'text-foreground hover:bg-secondary/40';
+            }
+
+            let iconClasses = 'bg-secondary text-muted-foreground';
+            if (isActive) {
+              iconClasses = 'bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2';
+            } else if (isCompleted) {
+              iconClasses = 'bg-emerald-600 text-white';
+            }
+
             return (
               <button
                 type="button"
                 key={step.num}
                 onClick={() => canNavigate && setCurrentStep(step.num)}
                 disabled={!canNavigate}
-                className={`flex flex-col items-center text-center p-2 rounded-xl transition-all ${
-                  isActive
-                    ? 'bg-primary/10 text-primary font-semibold'
-                    : isCompleted
-                    ? 'text-foreground hover:bg-secondary/40'
-                    : 'text-muted-foreground opacity-60'
-                }`}
+                className={`flex flex-col items-center text-center p-2 rounded-xl transition-all ${buttonClasses}`}
               >
                 <div
-                  className={`flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl text-xs font-bold transition-all shadow-2xs mb-1.5 ${
-                    isActive
-                      ? 'bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2'
-                      : isCompleted
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-secondary text-muted-foreground'
-                  }`}
+                  className={`flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl text-xs font-bold transition-all shadow-2xs mb-1.5 ${iconClasses}`}
                 >
                   {isCompleted ? (
                     <Check className="h-4 w-4" />
@@ -448,6 +462,14 @@ export const WizardContainer: React.FC = () => {
           })}
         </div>
       </div>
+
+      {/* Toast Feedback Error */}
+      {errorMessage && (
+        <div className="flex items-center gap-2 rounded-xl border border-destructive/60 bg-destructive/10 px-4 py-2.5 text-xs text-destructive">
+          <AlertCircle className="h-4 w-4 shrink-0 text-destructive" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
 
       {/* Toast Feedback Sukses Simpan */}
       {saveSuccessMessage && (
@@ -546,7 +568,6 @@ export const WizardContainer: React.FC = () => {
 
       {currentStep === 5 && (
         <Step5TemplatePublish
-          eventId={activeEventId || ''}
           slug={eventData?.slug || ''}
           title={eventData?.title || ''}
           eventDate={eventData?.eventDate}

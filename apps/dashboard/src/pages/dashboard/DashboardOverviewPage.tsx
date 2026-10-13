@@ -118,7 +118,7 @@ export const DashboardOverviewPage: React.FC = () => {
       </div>
 
       {/* Events Grid / Empty State / Structural Loading */}
-      {isLoading ? (
+      {isLoading && (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((key) => (
             <Card key={key} className="p-6 space-y-5 border-border/80 shadow-2xs">
@@ -138,7 +138,9 @@ export const DashboardOverviewPage: React.FC = () => {
             </Card>
           ))}
         </div>
-      ) : eventsList && eventsList.length > 0 ? (
+      )}
+
+      {!isLoading && eventsList && eventsList.length > 0 && (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {eventsList.map((evt) => (
             <Card
@@ -219,7 +221,9 @@ export const DashboardOverviewPage: React.FC = () => {
             </Card>
           ))}
         </div>
-      ) : (
+      )}
+
+      {!isLoading && (!eventsList || eventsList.length === 0) && (
         /* Empty State */
         <Card className="border-dashed border-border/90 bg-card/50 p-12 text-center shadow-none">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary text-primary">

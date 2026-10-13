@@ -29,6 +29,10 @@ interface Step3Props {
   isSaving: boolean;
 }
 
+interface LocalLoveStoryItem extends WizardLoveStoryItem {
+  _clientId: string;
+}
+
 export const Step3BiodataStory: React.FC<Step3Props> = ({
   initialData,
   onSaveAndNext,
@@ -59,25 +63,31 @@ export const Step3BiodataStory: React.FC<Step3Props> = ({
     initialData.quoteSource || 'QS. Ar-Rum: 21'
   );
 
-  const [loveStory, setLoveStory] = useState<WizardLoveStoryItem[]>(
-    initialData.loveStory && initialData.loveStory.length > 0
-      ? initialData.loveStory
-      : [
-          {
-            year: '2021',
-            story: 'Pertemuan pertama kami di kampus saat kegiatan seminar nasional.',
-          },
-          {
-            year: '2024',
-            story: 'Pertunangan hangat dihadiri keluarga besar tercinta.',
-          },
-        ]
-  );
+  const [loveStory, setLoveStory] = useState<LocalLoveStoryItem[]>(() => {
+    const rawList =
+      initialData.loveStory && initialData.loveStory.length > 0
+        ? initialData.loveStory
+        : [
+            {
+              year: '2021',
+              story: 'Pertemuan pertama kami di kampus saat kegiatan seminar nasional.',
+            },
+            {
+              year: '2024',
+              story: 'Pertunangan hangat dihadiri keluarga besar tercinta.',
+            },
+          ];
+    return rawList.map((item, idx) => ({
+      ...item,
+      _clientId: `story_${idx}_${Date.now()}`,
+    }));
+  });
 
   const handleAddStory = () => {
-    setLoveStory([
-      ...loveStory,
+    setLoveStory((prev) => [
+      ...prev,
       {
+        _clientId: `story_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
         year: `${new Date().getFullYear()}`,
         story: 'Momen berharga lainnya dalam perjalanan cinta kami.',
       },
@@ -112,7 +122,7 @@ export const Step3BiodataStory: React.FC<Step3Props> = ({
       groomParents: groomParents || null,
       quoteText: quoteText || null,
       quoteSource: quoteSource || null,
-      loveStory,
+      loveStory: loveStory.map(({ _clientId, ...item }) => item),
     });
   };
 
@@ -310,7 +320,7 @@ export const Step3BiodataStory: React.FC<Step3Props> = ({
               <div className="space-y-3">
                 {loveStory.map((storyItem, idx) => (
                   <div
-                    key={idx}
+                    key={storyItem._clientId}
                     className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3.5 rounded-xl border border-border/70 bg-secondary/30"
                   >
                     <div className="w-full sm:w-28 shrink-0">

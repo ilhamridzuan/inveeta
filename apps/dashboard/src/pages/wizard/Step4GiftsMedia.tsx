@@ -41,6 +41,10 @@ interface Step4Props {
   isSaving: boolean;
 }
 
+interface LocalBankAccountItem extends WizardBankAccountItem {
+  _clientId: string;
+}
+
 export const Step4GiftsMedia: React.FC<Step4Props> = ({
   eventId,
   initialData,
@@ -48,16 +52,20 @@ export const Step4GiftsMedia: React.FC<Step4Props> = ({
   onBack,
   isSaving,
 }) => {
-  const [bankAccounts, setBankAccounts] = useState<WizardBankAccountItem[]>(
-    initialData.bankAccounts || [
+  const [bankAccounts, setBankAccounts] = useState<LocalBankAccountItem[]>(() => {
+    const raw = initialData.bankAccounts || [
       {
         bankName: 'BCA',
         accountNumber: '1234567890',
         accountHolder: 'Rama Wijaya',
         sortOrder: 0,
       },
-    ]
-  );
+    ];
+    return raw.map((item, idx) => ({
+      ...item,
+      _clientId: `bank_${idx}_${Date.now()}`,
+    }));
+  });
   const [qrisImageUrl, setQrisImageUrl] = useState<string | null>(
     initialData.qrisImageUrl || null
   );
@@ -90,13 +98,14 @@ export const Step4GiftsMedia: React.FC<Step4Props> = ({
 
   // Bank Accounts Handler
   const handleAddBankAccount = () => {
-    setBankAccounts([
-      ...bankAccounts,
+    setBankAccounts((prev) => [
+      ...prev,
       {
+        _clientId: `bank_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
         bankName: 'Mandiri',
         accountNumber: '',
         accountHolder: '',
-        sortOrder: bankAccounts.length,
+        sortOrder: prev.length,
       },
     ]);
   };
@@ -203,8 +212,8 @@ export const Step4GiftsMedia: React.FC<Step4Props> = ({
 
   // Gallery Photos Upload (batch compressor)
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+    const fileList = e.target.files ? Array.from(e.target.files) : [];
+    if (fileList.length === 0) return;
 
     if (!eventId) {
       setUploadError(
@@ -218,31 +227,30 @@ export const Step4GiftsMedia: React.FC<Step4Props> = ({
     setUploadError(null);
 
     try {
-      const newPhotos: WizardGalleryPhotoItem[] = [];
+      const validFiles = fileList.filter((file) => file.type.startsWith('image/'));
+      const startIndex = galleryPhotos.length;
+      const newPhotos: WizardGalleryPhotoItem[] = await Promise.all(
+        validFiles.map(async (file, i) => {
+          const compressed = await compressImage(file, { maxWidth: 1920, quality: 0.85 });
+          const res = await uploadMediaFile({
+            eventId,
+            blobOrFile: compressed.blob,
+            fileName: compressed.fileName,
+            mediaType: 'photo',
+            mimeType: compressed.mimeType,
+            slotIdentifier: `gallery_${Date.now()}_${i}`,
+            sortOrder: startIndex + i,
+          });
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (!file.type.startsWith('image/')) continue;
+          return {
+            fileUrl: res.publicUrl,
+            slotIdentifier: res.slotIdentifier || null,
+            sortOrder: startIndex + i,
+          };
+        })
+      );
 
-        const compressed = await compressImage(file, { maxWidth: 1920, quality: 0.85 });
-        const res = await uploadMediaFile({
-          eventId,
-          blobOrFile: compressed.blob,
-          fileName: compressed.fileName,
-          mediaType: 'photo',
-          mimeType: compressed.mimeType,
-          slotIdentifier: `gallery_${Date.now()}_${i}`,
-          sortOrder: galleryPhotos.length + i,
-        });
-
-        newPhotos.push({
-          fileUrl: res.publicUrl,
-          slotIdentifier: res.slotIdentifier || null,
-          sortOrder: galleryPhotos.length + i,
-        });
-      }
-
-      setGalleryPhotos([...galleryPhotos, ...newPhotos]);
+      setGalleryPhotos((prev) => [...prev, ...newPhotos]);
     } catch (err) {
       setUploadError(
         err instanceof Error ? err.message : 'Gagal mengunggah foto galeri'
@@ -260,7 +268,7 @@ export const Step4GiftsMedia: React.FC<Step4Props> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await onSaveAndNext({
-      bankAccounts,
+      bankAccounts: bankAccounts.map(({ _clientId, ...item }) => item),
       qrisImageUrl: qrisImageUrl || null,
       giftAddress: giftAddress || null,
       giftRecipientName: giftRecipientName || null,
@@ -318,7 +326,7 @@ export const Step4GiftsMedia: React.FC<Step4Props> = ({
             <div className="space-y-3">
               {bankAccounts.map((bank, idx) => (
                 <div
-                  key={idx}
+                  key={bank._clientId}
                   className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3.5 rounded-xl border border-border/70 bg-secondary/30 items-center"
                 >
                   <div className="sm:col-span-3">
@@ -416,9 +424,10 @@ export const Step4GiftsMedia: React.FC<Step4Props> = ({
                   </div>
                 </div>
               ) : (
-                <div
+                <button
+                  type="button"
                   onClick={() => qrisInputRef.current?.click()}
-                  className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-border rounded-xl cursor-pointer hover:bg-secondary/40 transition text-center"
+                  className="w-full flex flex-col items-center justify-center p-6 border-2 border-dashed border-border rounded-xl cursor-pointer hover:bg-secondary/40 transition text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <QrCode className="h-8 w-8 text-muted-foreground mb-2" />
                   <span className="text-xs font-semibold text-foreground">
@@ -427,7 +436,7 @@ export const Step4GiftsMedia: React.FC<Step4Props> = ({
                   <span className="text-[11px] text-muted-foreground mt-1">
                     Format WebP/PNG otomatis dikompresi
                   </span>
-                </div>
+                </button>
               )}
 
               <input
@@ -587,9 +596,10 @@ export const Step4GiftsMedia: React.FC<Step4Props> = ({
             </div>
 
             {galleryPhotos.length === 0 ? (
-              <div
+              <button
+                type="button"
                 onClick={() => galleryInputRef.current?.click()}
-                className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-xl cursor-pointer hover:bg-secondary/40 transition text-center"
+                className="w-full flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-xl cursor-pointer hover:bg-secondary/40 transition text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <UploadCloud className="h-8 w-8 text-muted-foreground mb-2" />
                 <span className="text-xs font-semibold text-foreground">
@@ -598,12 +608,12 @@ export const Step4GiftsMedia: React.FC<Step4Props> = ({
                 <span className="text-[11px] text-muted-foreground mt-1">
                   Klik untuk memilih beberapa foto sekaligus (otomatis dikompresi ke WebP)
                 </span>
-              </div>
+              </button>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {galleryPhotos.map((photo, idx) => (
                   <div
-                    key={idx}
+                    key={photo.slotIdentifier || photo.fileUrl}
                     className="relative group aspect-square rounded-xl overflow-hidden border border-border bg-black/5"
                   >
                     <img

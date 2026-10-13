@@ -27,7 +27,6 @@ import type {
 } from '@inveeta/shared';
 
 interface Step5Props {
-  eventId: string;
   slug: string;
   title: string;
   eventDate?: string | null;
@@ -146,10 +145,11 @@ export const Step5TemplatePublish: React.FC<Step5Props> = ({
             </Label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {templatesList.map((tpl) => (
-                <div
+                <button
+                  type="button"
                   key={tpl.id}
                   onClick={() => setTemplateId(tpl.id)}
-                  className={`relative flex flex-col justify-between p-5 rounded-2xl border cursor-pointer transition-all ${
+                  className={`relative flex flex-col justify-between text-left p-5 rounded-2xl border cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     templateId === tpl.id
                       ? 'border-primary bg-primary/5 ring-2 ring-primary shadow-xs'
                       : 'border-border/80 bg-card hover:bg-secondary/40'
@@ -180,7 +180,7 @@ export const Step5TemplatePublish: React.FC<Step5Props> = ({
                       ID: {tpl.id}
                     </span>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </div>

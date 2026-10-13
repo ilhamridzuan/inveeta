@@ -78,7 +78,7 @@ export async function compressImage(
       ctx.drawImage(img, 0, 0, width, height);
 
       // Konversi ke format WebP berkualitas 85%
-      const targetMimeType: 'image/webp' = 'image/webp';
+      const targetMimeType = 'image/webp' as const;
       canvas.toBlob(
         (blob) => {
           if (!blob) {
