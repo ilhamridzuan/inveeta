@@ -2,16 +2,42 @@ import { z } from 'zod';
 import {
   createDraftEventSchema,
   updateWizardStepSchema,
+  wizardStep1Schema,
+  wizardStep2Schema,
+  wizardSessionItemSchema,
+  wizardStep3Schema,
+  wizardLoveStoryItemSchema,
+  wizardStep4Schema,
+  wizardBankAccountItemSchema,
+  wizardGalleryPhotoItemSchema,
+  wizardStep5Schema,
   publishEventSchema,
   updatePublishedEventSchema,
   visualCustomizationSchema,
 } from '../schemas/event.schema.js';
-import type { IndonesiaTimeZone, TemplateTier } from '../constants/categories.js';
+import type {
+  IndonesiaTimeZone,
+  TemplateTier,
+} from '../constants/categories.js';
 
 export type CreateDraftEventInput = z.infer<typeof createDraftEventSchema>;
 export type UpdateWizardStepInput = z.infer<typeof updateWizardStepSchema>;
+export type WizardStep1Input = z.infer<typeof wizardStep1Schema>;
+export type WizardStep2Input = z.infer<typeof wizardStep2Schema>;
+export type WizardSessionItem = z.infer<typeof wizardSessionItemSchema>;
+export type WizardStep3Input = z.infer<typeof wizardStep3Schema>;
+export type WizardLoveStoryItem = z.infer<typeof wizardLoveStoryItemSchema>;
+export type WizardStep4Input = z.infer<typeof wizardStep4Schema>;
+export type WizardBankAccountItem = z.infer<typeof wizardBankAccountItemSchema>;
+export type WizardGalleryPhotoItem = z.infer<
+  typeof wizardGalleryPhotoItemSchema
+>;
+export type WizardStep5Input = z.infer<typeof wizardStep5Schema>;
+
 export type PublishEventInput = z.infer<typeof publishEventSchema>;
-export type UpdatePublishedEventInput = z.infer<typeof updatePublishedEventSchema>;
+export type UpdatePublishedEventInput = z.infer<
+  typeof updatePublishedEventSchema
+>;
 export type VisualCustomization = z.infer<typeof visualCustomizationSchema>;
 
 export interface LoveStoryItem {
@@ -21,10 +47,11 @@ export interface LoveStoryItem {
 }
 
 export interface BankAccountItem {
-  id: string;
+  id?: string;
   bankName: string;
   accountNumber: string;
   accountHolder: string;
+  sortOrder?: number;
 }
 
 export interface EventGiftDetails {

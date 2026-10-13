@@ -9,3 +9,6 @@ export * from './schemas/index.js';
 
 // DTOs & Inferred Types
 export * from './dto/index.js';
+
+// Templates & Registry
+export * from './templates/index.js';
