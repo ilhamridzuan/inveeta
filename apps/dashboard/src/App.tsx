@@ -6,6 +6,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { DashboardOverviewPage } from '@/pages/dashboard/DashboardOverviewPage';
 import { WizardPage } from '@/pages/wizard/WizardPage';
+import { GuestListPage } from '@/features/guests';
 
 export const App: React.FC = () => {
   return (
@@ -24,6 +25,8 @@ export const App: React.FC = () => {
       >
         <Route path="/dashboard" element={<DashboardOverviewPage />} />
         <Route path="/wizard" element={<WizardPage />} />
+        <Route path="/guests" element={<GuestListPage />} />
+        <Route path="/events/:eventId/guests" element={<GuestListPage />} />
       </Route>
 
       {/* Fallback Root Navigation */}

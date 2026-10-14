@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Sparkles, LogOut, Plus, AlertTriangle } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Sparkles, LogOut, Plus, AlertTriangle, Users, Layers } from 'lucide-react';
 import { useSession, signOut } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -18,6 +18,7 @@ import {
 export const Navbar: React.FC = () => {
   const { data: session } = useSession();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -62,6 +63,32 @@ export const Navbar: React.FC = () => {
             <Badge variant="secondary" className="hidden sm:inline-flex text-[11px] font-medium tracking-wide">
               Host Workspace
             </Badge>
+
+            {/* Navigation links */}
+            <nav className="hidden md:flex items-center gap-1 ml-3 pl-3 border-l border-border/80 text-xs">
+              <Link
+                to="/dashboard"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors ${
+                  location.pathname === '/dashboard'
+                    ? 'bg-secondary text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Layers className="h-3.5 w-3.5" />
+                <span>Daftar Acara</span>
+              </Link>
+              <Link
+                to="/guests"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors ${
+                  location.pathname.includes('/guests')
+                    ? 'bg-secondary text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Users className="h-3.5 w-3.5" />
+                <span>Tamu Undangan</span>
+              </Link>
+            </nav>
           </div>
 
           {/* Action & User Profile */}
