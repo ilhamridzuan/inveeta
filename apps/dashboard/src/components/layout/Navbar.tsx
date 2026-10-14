@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Sparkles, LogOut, Plus, AlertTriangle, Users, Layers } from 'lucide-react';
+import { Sparkles, LogOut, Plus, AlertTriangle, Users, Layers, MessageSquare, BarChart3 } from 'lucide-react';
 import { useSession, signOut } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -75,7 +75,7 @@ export const Navbar: React.FC = () => {
                 }`}
               >
                 <Layers className="h-3.5 w-3.5" />
-                <span>Daftar Acara</span>
+                <span>Acara</span>
               </Link>
               <Link
                 to="/guests"
@@ -86,7 +86,29 @@ export const Navbar: React.FC = () => {
                 }`}
               >
                 <Users className="h-3.5 w-3.5" />
-                <span>Tamu Undangan</span>
+                <span>Tamu</span>
+              </Link>
+              <Link
+                to="/wishes"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors ${
+                  location.pathname.includes('/wishes')
+                    ? 'bg-secondary text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <MessageSquare className="h-3.5 w-3.5" />
+                <span>Ucapan</span>
+              </Link>
+              <Link
+                to="/analytics"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors ${
+                  location.pathname.includes('/analytics')
+                    ? 'bg-secondary text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <BarChart3 className="h-3.5 w-3.5" />
+                <span>Analitik</span>
               </Link>
             </nav>
           </div>

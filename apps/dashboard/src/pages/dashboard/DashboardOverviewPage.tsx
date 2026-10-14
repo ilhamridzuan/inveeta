@@ -12,6 +12,8 @@ import {
   FileEdit,
   Layers,
   Users,
+  MessageSquare,
+  BarChart3,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
@@ -193,18 +195,30 @@ export const DashboardOverviewPage: React.FC = () => {
                 )}
               </CardContent>
 
-              <CardFooter className="flex items-center justify-between border-t border-border/60 pt-4">
-                <div className="flex items-center gap-1.5">
-                  <Button asChild variant="outline" size="sm" className="gap-1.5">
+              <CardFooter className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-4">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Button asChild variant="outline" size="sm" className="gap-1 text-xs">
                     <Link to={`/wizard?id=${evt.id}`}>
                       <FileEdit className="h-3.5 w-3.5" />
                       <span>Edit</span>
                     </Link>
                   </Button>
-                  <Button asChild variant="outline" size="sm" className="gap-1.5">
+                  <Button asChild variant="outline" size="sm" className="gap-1 text-xs">
                     <Link to={`/events/${evt.id}/guests`}>
                       <Users className="h-3.5 w-3.5" />
                       <span>Tamu</span>
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" size="sm" className="gap-1 text-xs">
+                    <Link to={`/events/${evt.id}/wishes`}>
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      <span>Ucapan</span>
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" size="sm" className="gap-1 text-xs">
+                    <Link to={`/events/${evt.id}/analytics`}>
+                      <BarChart3 className="h-3.5 w-3.5" />
+                      <span>Analitik</span>
                     </Link>
                   </Button>
                 </div>

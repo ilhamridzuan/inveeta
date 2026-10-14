@@ -15,8 +15,9 @@ import {
   ChevronRight,
   Lock,
   MessageCircle,
+  MessageSquare,
   AlertCircle,
-  FileSpreadsheet,
+  Loader2,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,8 @@ import {
 import { GuestFormModal } from './GuestFormModal';
 import { ManualOverrideModal } from './ManualOverrideModal';
 import { DeleteGuestDialog } from './DeleteGuestDialog';
+import { WaTemplateEditorModal, getGuestWaLink } from '@/features/whatsapp';
+import { ExportButtons } from '@/features/analytics';
 import type { ManageGuestItemDTO } from '@inveeta/shared';
 
 export const GuestListPage: React.FC = () => {
@@ -94,6 +97,9 @@ export const GuestListPage: React.FC = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [guestToDelete, setGuestToDelete] = useState<ManageGuestItemDTO | null>(null);
 
+  const [isWaTemplateModalOpen, setIsWaTemplateModalOpen] = useState(false);
+  const [isGeneratingWa, setIsGeneratingWa] = useState<string | null>(null);
+
   // Copy feedback state
   const [copiedGuestId, setCopiedGuestId] = useState<string | null>(null);
 
@@ -104,6 +110,24 @@ export const GuestListPage: React.FC = () => {
       setTimeout(() => setCopiedGuestId(null), 2000);
     } catch {
       // Fallback
+    }
+  };
+
+  const handleSendWhatsApp = async (guest: ManageGuestItemDTO) => {
+    if (!activeEventId || !guest.phoneNumber) return;
+    setIsGeneratingWa(guest.id);
+    try {
+      const waData = await getGuestWaLink(activeEventId, guest.id);
+      window.open(waData.encodedUrl, '_blank', 'noopener,noreferrer');
+    } catch {
+      // Fallback direct wa.me link
+      const cleanPhone = guest.phoneNumber.replace(/[^0-9]/g, '');
+      const fallbackUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
+        `Kepada Yth. ${guest.name},\n\nKami mengundang Anda untuk hadir di acara kami. Silakan buka tautan undangan berikut: ${guest.invitationUrl}`
+      )}`;
+      window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
+    } finally {
+      setIsGeneratingWa(null);
     }
   };
 
@@ -227,18 +251,18 @@ export const GuestListPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button asChild variant="outline" size="sm" className="gap-1.5 text-xs">
-              <a
-                href={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1/manage/events/${activeEventId}/export/xlsx`}
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Download data tamu format Excel (.xlsx)"
-              >
-                <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" />
-                <span>Ekspor Excel</span>
-              </a>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsWaTemplateModalOpen(true)}
+              className="gap-1.5 text-xs font-medium"
+              title="Atur format pesan WhatsApp untuk tamu"
+            >
+              <MessageSquare className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>Template WA</span>
             </Button>
+            <ExportButtons eventId={activeEvent.id} size="sm" />
           </div>
         </div>
       )}
@@ -535,21 +559,18 @@ export const GuestListPage: React.FC = () => {
                           {/* WhatsApp Link button */}
                           {guest.phoneNumber && (
                             <Button
-                              asChild
                               variant="ghost"
                               size="icon-sm"
+                              onClick={() => handleSendWhatsApp(guest)}
+                              disabled={isGeneratingWa === guest.id}
                               className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
                               title="Kirim pesan WhatsApp"
                             >
-                              <a
-                                href={`https://wa.me/${guest.phoneNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-                                  `Halo ${guest.name}, kami mengundang Anda untuk hadir di acara kami. Silakan buka tautan undangan berikut: ${guest.invitationUrl}`
-                                )}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
+                              {isGeneratingWa === guest.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
+                              ) : (
                                 <MessageCircle className="h-4 w-4" />
-                              </a>
+                              )}
                             </Button>
                           )}
 
@@ -664,6 +685,15 @@ export const GuestListPage: React.FC = () => {
             onOpenChange={setIsDeleteDialogOpen}
             eventId={activeEventId}
             guest={guestToDelete}
+          />
+
+          <WaTemplateEditorModal
+            open={isWaTemplateModalOpen}
+            onOpenChange={setIsWaTemplateModalOpen}
+            eventId={activeEventId}
+            eventTitle={activeEvent?.title}
+            eventSlug={activeEvent?.slug}
+            eventDate={activeEvent?.eventDate}
           />
         </>
       )}
