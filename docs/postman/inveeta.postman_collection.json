@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "c1f7b8a9-4d2e-4b9e-9f3a-12e4f5a6b7c8",
     "name": "Inveeta API (Development & Testing)",
-    "description": "Koleksi lengkap pengujian endpoint Inveeta API (Milestone M0 s/d M1.3):\n- Autentikasi Better Auth\n- Public Events & Live Slug Availability Check\n- Host Event Lifecycle (Draft, Wizard Step 1-5, Publish, Slug Lock Protection)\n- Cloudflare R2 Direct Upload Media (Presign, Direct PUT, Confirm, Delete)",
+    "description": "Koleksi lengkap pengujian endpoint Inveeta API (Milestone M0 s/d M3.3):\n- 00. Health & Probe\n- 01. Autentikasi (Better Auth)\n- 02. Public Endpoints & Slug Check\n- 03. Host Events Lifecycle & Wizard\n- 04. Cloudflare R2 Media Upload\n- 05. Public Invitation, Personal Guests & RSVP (M2)\n- 06. Guest Management, Allocations & Override (M3.1)\n- 07. WhatsApp Distribution & Link Generator (M3.2)\n- 08. Wishes Moderation (M3.2)\n- 09. Dashboard Metrics KPI (M3.2)\n- 10. Streaming Exports Excel & CSV (M3.3)\n- 11. Realtime SSE Stream (M2)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -13,12 +13,12 @@
     },
     {
       "key": "testEmail",
-      "value": "host@inveeta.com",
+      "value": "test@inveeta.com",
       "type": "string"
     },
     {
       "key": "testPassword",
-      "value": "Password123!",
+      "value": "password123",
       "type": "string"
     },
     {
@@ -28,7 +28,27 @@
     },
     {
       "key": "eventSlug",
-      "value": "andi-siti-2026",
+      "value": "budi-dan-ani",
+      "type": "string"
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "guestId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "guestToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "wishId",
+      "value": "",
       "type": "string"
     },
     {
@@ -274,6 +294,22 @@
         },
         {
           "name": "2. Get List My Events (GET /mine)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data.length > 0) {",
+                  "    pm.collectionVariables.set('eventId', res.data[0].id);",
+                  "    pm.collectionVariables.set('eventSlug', res.data[0].slug);",
+                  "    console.log('Event ID disimpan:', res.data[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [],
@@ -286,6 +322,21 @@
         },
         {
           "name": "3. Get Event Detail by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data.sessions && res.data.sessions.length > 0) {",
+                  "    pm.collectionVariables.set('sessionId', res.data.sessions[0].id);",
+                  "    console.log('Session ID disimpan:', res.data.sessions[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [],
@@ -576,6 +627,434 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "manage", "media", "{{mediaId}}"]
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Public Invitation & RSVP (Milestone M2)",
+      "item": [
+        {
+          "name": "1. Get Public Event Detail by Slug",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/public/events/{{eventSlug}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "public", "events", "{{eventSlug}}"]
+            }
+          }
+        },
+        {
+          "name": "2. Get Personalized Guest Context by Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/public/events/{{eventSlug}}/guests/{{guestToken}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "public", "events", "{{eventSlug}}", "guests", "{{guestToken}}"]
+            }
+          }
+        },
+        {
+          "name": "3. Submit Batch RSVP Multi-Sesi",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventId\": \"{{eventId}}\",\n  \"guestToken\": \"{{guestToken}}\",\n  \"sessions\": [\n    {\n      \"eventSessionId\": \"{{sessionId}}\",\n      \"status\": \"attending\",\n      \"actualPax\": 2\n    }\n  ],\n  \"notes\": \"Selamat menempuh hidup baru ya!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/public/rsvp",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "public", "rsvp"]
+            }
+          }
+        },
+        {
+          "name": "4. Get Public Wishes with Cursor Pagination",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/public/wishes/{{eventId}}?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "public", "wishes", "{{eventId}}"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5. Submit Public Wish (Anti-XSS & Realtime)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventId\": \"{{eventId}}\",\n  \"senderName\": \"Sahabat Mempelai\",\n  \"message\": \"Semoga menjadi keluarga sakinah, mawaddah, warahmah!\",\n  \"senderRelation\": \"Teman Kuliah\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/public/wishes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "public", "wishes"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Guest Management & Allocations (Milestone M3.1)",
+      "item": [
+        {
+          "name": "1. List Guests with Filter & Pagination",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/guests?page=1&limit=10&search=&category=&rsvpStatus=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "guests"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "category",
+                  "value": "VIP",
+                  "disabled": true
+                },
+                {
+                  "key": "rsvpStatus",
+                  "value": "attending",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Create New Guest with Session Allocations",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data) {",
+                  "    if (res.data.id) pm.collectionVariables.set('guestId', res.data.id);",
+                  "    if (res.data.token) pm.collectionVariables.set('guestToken', res.data.token);",
+                  "    console.log('Guest ID:', res.data.id, 'Token:', res.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bpk. Hendra Pratama & Partner\",\n  \"phoneNumber\": \"081234567890\",\n  \"category\": \"VIP\",\n  \"maxPax\": 2,\n  \"allocatedSessionIds\": [\"{{sessionId}}\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/guests",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "guests"]
+            }
+          }
+        },
+        {
+          "name": "3. Update Guest Profile & Allocations",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bpk. Hendra Pratama & Keluarga Besar (VIP)\",\n  \"phoneNumber\": \"081234567890\",\n  \"category\": \"VIP\",\n  \"maxPax\": 3,\n  \"allocatedSessionIds\": [\"{{sessionId}}\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/guests/{{guestId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "guests", "{{guestId}}"]
+            }
+          }
+        },
+        {
+          "name": "4. Manual Override Guest RSVP",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"status\": \"attending\",\n  \"actualPax\": 2,\n  \"notes\": \"Konfirmasi langsung via telepon oleh Host\",\n  \"lockGuestForm\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/guests/{{guestId}}/override",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "guests", "{{guestId}}", "override"]
+            }
+          }
+        },
+        {
+          "name": "5. Delete Guest",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/guests/{{guestId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "guests", "{{guestId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. WhatsApp Distribution & Link Generator (Milestone M3.2)",
+      "item": [
+        {
+          "name": "1. Get WhatsApp Message Template",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/wa-template",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "wa-template"]
+            }
+          }
+        },
+        {
+          "name": "2. Update Custom WhatsApp Template",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"templateText\": \"Kepada Yth. {nama},\\n\\nTanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan kami:\\n\\n*{acara}*\\n{tanggal}\\n\\nInformasi lengkap serta konfirmasi kehadiran (RSVP) dapat diakses melalui tautan berikut:\\n{link}\\n\\nTerima kasih atas doa restunya.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/wa-template",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "wa-template"]
+            }
+          }
+        },
+        {
+          "name": "3. Generate WhatsApp Deep-Link wa.me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/guests/{{guestId}}/wa-link",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "guests", "{{guestId}}", "wa-link"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08. Wishes Moderation (Milestone M3.2)",
+      "item": [
+        {
+          "name": "1. Get Manage Wishes List (All / Visible / Hidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data.items && res.data.items.length > 0) {",
+                  "    pm.collectionVariables.set('wishId', res.data.items[0].id);",
+                  "    console.log('Wish ID disimpan:', res.data.items[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/wishes/manage?page=1&limit=20&status=all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "wishes", "manage"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "status",
+                  "value": "all",
+                  "description": "all | visible | hidden"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Toggle Wish Visibility (Soft Moderation)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isHidden\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/wishes/{{wishId}}/visibility",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "wishes", "{{wishId}}", "visibility"]
+            }
+          }
+        },
+        {
+          "name": "3. Delete Wish Permanently (Hard Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/wishes/{{wishId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "wishes", "{{wishId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "09. Dashboard Metrics KPI (Milestone M3.2)",
+      "item": [
+        {
+          "name": "1. Get Event Dashboard Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/metrics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "metrics"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Streaming Exports Excel & CSV (Milestone M3.3)",
+      "item": [
+        {
+          "name": "1. Export Guests to Excel Stream (.xlsx)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/export/xlsx",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "export", "xlsx"]
+            },
+            "description": "Mengalirkan binary file Excel (.xlsx) dengan mode Streaming Writer (Jebakan 5 AGENTS.md, Zero Heap Spike). Simpan respons via 'Send and Download' di Postman."
+          }
+        },
+        {
+          "name": "2. Export Guests to CSV Stream (.csv)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manage/events/{{eventId}}/export/csv",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manage", "events", "{{eventId}}", "export", "csv"]
+            },
+            "description": "Mengalirkan teks CSV dengan penyisipan 3-byte UTF-8 BOM (\\uFEFF) di awal file agar karakter rapi di Microsoft Excel Windows."
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Realtime SSE Stream (Milestone M2)",
+      "item": [
+        {
+          "name": "1. SSE Events Stream",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/event-stream"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/realtime/events/{{eventId}}/stream",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "realtime", "events", "{{eventId}}", "stream"]
+            },
+            "description": "Server-Sent Events (SSE) live streaming untuk broadcast wish.created, wish.moderated, wish.deleted, rsvp.updated, dan metrics.updated dengan heartbeat tiap 15 detik."
           }
         }
       ]
