@@ -63,7 +63,7 @@ export class GuestsService {
     // 2. Susun kueri filter dinamis
     const conditions = [eq(guests.eventId, eventId)];
 
-    if (filter.search && filter.search.trim()) {
+    if (filter.search?.trim()) {
       const searchPattern = `%${filter.search.trim()}%`;
       conditions.push(
         or(
@@ -73,7 +73,7 @@ export class GuestsService {
       );
     }
 
-    if (filter.category && filter.category.trim()) {
+    if (filter.category?.trim()) {
       conditions.push(eq(guests.category, toDbCategory(filter.category)));
     }
 
@@ -263,7 +263,7 @@ export class GuestsService {
 
     // Normalisasi nomor telepon
     let normalizedPhone: string | null = null;
-    if (input.phoneNumber && input.phoneNumber.trim()) {
+    if (input.phoneNumber?.trim()) {
       normalizedPhone = normalizeWhatsAppNumber(input.phoneNumber);
     }
 
@@ -284,11 +284,13 @@ export class GuestsService {
         })
         .returning();
 
-      for (const sessionId of input.allocatedSessionIds) {
-        await tx.insert(guestSessionAllocations).values({
-          guestId: inserted.id,
-          eventSessionId: sessionId,
-        });
+      if (input.allocatedSessionIds.length > 0) {
+        await tx.insert(guestSessionAllocations).values(
+          input.allocatedSessionIds.map((sessionId) => ({
+            guestId: inserted.id,
+            eventSessionId: sessionId,
+          }))
+        );
       }
 
       return inserted;
@@ -365,10 +367,9 @@ export class GuestsService {
 
     let normalizedPhone: string | null | undefined = undefined;
     if (input.phoneNumber !== undefined) {
-      normalizedPhone =
-        input.phoneNumber && input.phoneNumber.trim()
-          ? normalizeWhatsAppNumber(input.phoneNumber)
-          : null;
+      normalizedPhone = input.phoneNumber?.trim()
+        ? normalizeWhatsAppNumber(input.phoneNumber)
+        : null;
     }
 
     await db.transaction(async (tx) => {
@@ -392,11 +393,13 @@ export class GuestsService {
           .delete(guestSessionAllocations)
           .where(eq(guestSessionAllocations.guestId, guestId));
 
-        for (const sessionId of input.allocatedSessionIds) {
-          await tx.insert(guestSessionAllocations).values({
-            guestId,
-            eventSessionId: sessionId,
-          });
+        if (input.allocatedSessionIds.length > 0) {
+          await tx.insert(guestSessionAllocations).values(
+            input.allocatedSessionIds.map((sessionId) => ({
+              guestId,
+              eventSessionId: sessionId,
+            }))
+          );
         }
       }
     });
@@ -526,8 +529,6 @@ export class GuestsService {
           );
         }
         effectiveActualPax = input.actualPax;
-      } else {
-        effectiveActualPax = 0;
       }
 
       const now = new Date();

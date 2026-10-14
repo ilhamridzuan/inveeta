@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { GUEST_CATEGORIES } from '../constants/categories.js';
 
 export const guestCategoryEnum = z.enum([
   'VIP',
