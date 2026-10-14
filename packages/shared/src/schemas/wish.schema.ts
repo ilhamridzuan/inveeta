@@ -21,3 +21,21 @@ export const getWishesQuerySchema = z.object({
 });
 
 export type GetWishesQuery = z.infer<typeof getWishesQuerySchema>;
+
+export const updateWishVisibilitySchema = z.object({
+  isHidden: z.boolean(),
+});
+
+export type UpdateWishVisibilityInput = z.infer<
+  typeof updateWishVisibilitySchema
+>;
+
+export const getManageWishesQuerySchema = z.object({
+  status: z.enum(['all', 'visible', 'hidden']).default('all').optional(),
+  page: z.coerce.number().int().min(1).default(1).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(20).optional(),
+});
+
+export type GetManageWishesQueryInput = z.infer<
+  typeof getManageWishesQuerySchema
+>;

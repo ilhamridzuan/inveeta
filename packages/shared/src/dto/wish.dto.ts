@@ -16,3 +16,22 @@ export interface PaginatedWishesDTO {
   nextCursor: string | null;
   hasMore: boolean;
 }
+
+export interface ManageWishItemDTO {
+  id: string;
+  eventId: string;
+  guestId: string | null;
+  senderName: string;
+  message: string;
+  senderRelation: string | null;
+  isHidden: boolean;
+  createdAt: string;
+}
+
+export interface PaginatedManageWishesDTO {
+  items: ManageWishItemDTO[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}

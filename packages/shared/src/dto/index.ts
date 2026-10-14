@@ -5,3 +5,4 @@ export * from './rsvp.dto.js';
 export * from './wish.dto.js';
 export * from './media.dto.js';
 export * from './metrics.dto.js';
+export * from './wa.dto.js';
