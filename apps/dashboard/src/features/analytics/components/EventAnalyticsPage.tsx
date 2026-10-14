@@ -1,15 +1,15 @@
-import React, { useMemo } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import React from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Users,
   MessageSquare,
   ArrowRight,
   AlertCircle,
 } from 'lucide-react';
-import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { useActiveEvent } from '@/hooks/useActiveEvent';
+import { EventSelector } from '@/components/EventSelector';
 import { useEventMetricsQuery } from '../api/useMetrics';
 import { useDashboardRealtime } from '../api/useDashboardRealtime';
 import { KpiSummaryCards } from './KpiSummaryCards';
@@ -17,34 +17,17 @@ import { SessionAttendanceBreakdown } from './SessionAttendanceBreakdown';
 import { ExportButtons } from './ExportButtons';
 
 export const EventAnalyticsPage: React.FC = () => {
-  const { eventId: routeEventId } = useParams<{ eventId?: string }>();
   const navigate = useNavigate();
+  const { activeEventId, myEvents } = useActiveEvent();
 
-  // 1. Fetch host's events list if route doesn't specify
-  const { data: myEvents } = useQuery({
-    queryKey: ['my-events'],
-    queryFn: async () => {
-      const res = await apiClient.api.v1.manage.events.mine.$get();
-      if (!res.ok) throw new Error('Gagal mengambil daftar acara');
-      const json = await res.json();
-      return json.data;
-    },
-  });
-
-  const activeEventId = useMemo(() => {
-    if (routeEventId) return routeEventId;
-    if (myEvents && myEvents.length > 0) return myEvents[0]?.id;
-    return undefined;
-  }, [routeEventId, myEvents]);
-
-  // 2. Fetch event metrics
+  // 1. Fetch event metrics
   const {
     data: metricsData,
     isLoading: isLoadingMetrics,
     error: metricsError,
   } = useEventMetricsQuery(activeEventId);
 
-  // 3. Connect to Realtime SSE
+  // 2. Connect to Realtime SSE
   const { isConnected, lastEventAt } = useDashboardRealtime(activeEventId);
 
   const handleEventSwitch = (newEventId: string) => {
@@ -72,24 +55,11 @@ export const EventAnalyticsPage: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {myEvents && myEvents.length > 1 && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground hidden md:inline">
-                Acara:
-              </span>
-              <select
-                className="h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium text-foreground shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                value={activeEventId || ''}
-                onChange={(e) => handleEventSwitch(e.target.value)}
-              >
-                {myEvents.map((evt) => (
-                  <option key={evt.id} value={evt.id}>
-                    {evt.title} ({evt.slug})
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          <EventSelector
+            events={myEvents}
+            activeEventId={activeEventId}
+            onSelectEvent={handleEventSwitch}
+          />
 
           {activeEventId && (
             <ExportButtons eventId={activeEventId} size="default" />

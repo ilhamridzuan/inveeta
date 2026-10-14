@@ -255,8 +255,9 @@ export const ManualOverrideModal: React.FC<ManualOverrideModalProps> = ({
 
           {/* Lock Guest Form Checkbox */}
           <div className="rounded-xl border border-border/80 bg-secondary/30 p-3.5">
-            <label className="flex items-start gap-3 cursor-pointer">
+            <label htmlFor="lock-guest-form" className="flex items-start gap-3 cursor-pointer">
               <input
+                id="lock-guest-form"
                 type="checkbox"
                 checked={lockGuestForm}
                 onChange={(e) => setLockGuestForm(e.target.checked)}

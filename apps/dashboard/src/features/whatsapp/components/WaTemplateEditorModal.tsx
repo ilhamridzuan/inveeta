@@ -140,12 +140,12 @@ export const WaTemplateEditorModal: React.FC<WaTemplateEditorModalProps> = ({
       : 'Sabtu, 24 Oktober 2026';
 
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://inveeta.com';
-    const sampleLink = `${origin.replace('app.', '')}/${eventSlug}/sample-token`;
+    const sampleLink = `${origin.replaceAll('app.', '')}/${eventSlug}/sample-token`;
 
-    text = text.replace(/\{nama\}/g, 'Bpk. Muhammad Irfan & Partner');
-    text = text.replace(/\{acara\}/g, eventTitle);
-    text = text.replace(/\{tanggal\}/g, sampleDate);
-    text = text.replace(/\{link\}/g, sampleLink);
+    text = text.replaceAll('{nama}', 'Bpk. Muhammad Irfan & Partner');
+    text = text.replaceAll('{acara}', eventTitle);
+    text = text.replaceAll('{tanggal}', sampleDate);
+    text = text.replaceAll('{link}', sampleLink);
     return text;
   }, [templateText, eventTitle, eventDate, eventSlug]);
 

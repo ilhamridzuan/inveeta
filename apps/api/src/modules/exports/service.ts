@@ -354,26 +354,30 @@ export class ExportsService {
     ];
     await writeChunk(headers.map(escapeCsvCell).join(',') + '\r\n');
 
-    // 3. Tulis seluruh baris data tamu per commit stream
-    for (const rowData of rows) {
-      const line = [
-        rowData.no,
-        rowData.name,
-        rowData.category,
-        rowData.phoneNumber,
-        rowData.maxPax,
-        rowData.allocatedSessions,
-        rowData.rsvpStatus,
-        rowData.actualPax,
-        rowData.notes,
-        rowData.isManualOverride,
-        rowData.invitationUrl,
-        rowData.confirmedAt,
-      ]
-        .map(escapeCsvCell)
-        .join(',');
+    // 3. Tulis seluruh baris data tamu
+    if (rows.length > 0) {
+      const csvBody = rows
+        .map((rowData) =>
+          [
+            rowData.no,
+            rowData.name,
+            rowData.category,
+            rowData.phoneNumber,
+            rowData.maxPax,
+            rowData.allocatedSessions,
+            rowData.rsvpStatus,
+            rowData.actualPax,
+            rowData.notes,
+            rowData.isManualOverride,
+            rowData.invitationUrl,
+            rowData.confirmedAt,
+          ]
+            .map(escapeCsvCell)
+            .join(',')
+        )
+        .join('\r\n');
 
-      await writeChunk(line + '\r\n');
+      await writeChunk(csvBody + '\r\n');
     }
   }
 }

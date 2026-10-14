@@ -86,8 +86,12 @@ export function useDashboardRealtime(eventId?: string | null) {
         15000,
         Math.pow(1.5, reconnectAttemptsRef.current) * 1000
       );
-      // Randomized Jitter 1–5 detik (AGENTS.md Jebakan 4)
-      const jitter = Math.floor(Math.random() * 4000) + 1000;
+      // Randomized Jitter 1–5 detik (AGENTS.md Jebakan 4, CSPRNG for SonarCloud S2245 compliance)
+      const randomValue =
+        typeof window !== 'undefined' && window.crypto?.getRandomValues
+          ? window.crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296
+          : 0.5;
+      const jitter = Math.floor(randomValue * 4000) + 1000;
       const totalDelay = baseBackoff + jitter;
 
       if (reconnectTimeoutRef.current) {
